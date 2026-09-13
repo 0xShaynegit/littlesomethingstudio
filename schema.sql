@@ -1,0 +1,65 @@
+-- The Little Something Studio booking system schema
+-- Run with: npx wrangler d1 execute tls-bookings --file=./schema.sql
+
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('admin', 'facilitator')),
+  line_id TEXT,
+  promptpay_id TEXT,
+  bio TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS spaces (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  hourly_rate REAL,
+  capacity INTEGER,
+  amenities TEXT
+);
+
+CREATE TABLE IF NOT EXISTS listings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  facilitator_id INTEGER NOT NULL REFERENCES users(id),
+  space_id INTEGER REFERENCES spaces(id),
+  title_en TEXT NOT NULL,
+  title_th TEXT,
+  description_en TEXT,
+  description_th TEXT,
+  category TEXT,
+  start_time TEXT NOT NULL,
+  end_time TEXT NOT NULL,
+  price REAL,
+  capacity INTEGER,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'declined')),
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS bookings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  listing_id INTEGER NOT NULL REFERENCES listings(id),
+  attendee_name TEXT NOT NULL,
+  attendee_phone TEXT,
+  attendee_line TEXT,
+  payment_method TEXT CHECK (payment_method IN ('cash', 'promptpay')),
+  payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending', 'confirmed')),
+  confirmed_by INTEGER REFERENCES users(id),
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS space_rentals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  facilitator_id INTEGER NOT NULL REFERENCES users(id),
+  space_id INTEGER REFERENCES spaces(id),
+  start_time TEXT NOT NULL,
+  end_time TEXT NOT NULL,
+  rental_status TEXT DEFAULT 'pending' CHECK (rental_status IN ('pending', 'approved', 'declined')),
+  rental_fee REAL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Seed the one physical space
+INSERT INTO spaces (name, hourly_rate, capacity, amenities)
+VALUES ('The Little Something Studio - 3rd Floor', NULL, 20, 'Air-conditioned, wooden floor, mountain views, drinking water, toilets, parking');

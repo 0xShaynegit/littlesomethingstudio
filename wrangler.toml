@@ -1,0 +1,8 @@
+name = "littlesomethingstudio"
+compatibility_date = "2026-09-13"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tls-bookings"
+database_id = "a53dffa6-173c-4b63-be79-ad95d4b02ce9"
