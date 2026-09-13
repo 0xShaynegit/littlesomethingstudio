@@ -69,42 +69,8 @@
       <button class="chip" type="button" data-filter="movement-lab" aria-pressed="false"><span class="dot"></span>Movement Lab</button>
       <button class="chip" type="button" data-filter="sound-healing" aria-pressed="false"><span class="dot"></span>Sound Healing</button>
       </div>
-      <div class="dir" data-filter-grid>
-    <a class="fac" href="facilitator-sandra.html" data-cats="movement-lab dance">
-      <picture><source type="image/avif" srcset="images/thelittlesomethingstudio-the-little-something-studio-facilitator-sandra-portrait-400w.avif"><img src="images/thelittlesomethingstudio-the-little-something-studio-facilitator-sandra-portrait-400w.webp" width="400" height="400" alt="Sandra, contact improvisation facilitator" loading="lazy"></picture>
-      <div class="tags"><span class="tag-cat">Movement Lab</span><span class="tag-cat">Dance</span></div>
-      <h3>Sandra</h3>
-      <p>Contact improvisation, essential principles class and lab</p>
-      <span class="go">View profile and sessions</span>
-    </a>
-    <a class="fac" href="facilitator-nok.html" data-cats="yoga">
-      <img src="images/avatars/avatar-nok.svg" width="200" height="200" alt="Illustrated avatar of Nok" loading="lazy">
-      <div class="tags"><span class="tag-cat">Yoga</span></div>
-      <h3>Nok <span class="sample">Sample</span></h3>
-      <p>Gentle hatha and yin for slow mornings</p>
-      <span class="go">View profile and sessions</span>
-    </a>
-    <a class="fac" href="facilitator-mateus.html" data-cats="capoeira">
-      <img src="images/avatars/avatar-mateus.svg" width="200" height="200" alt="Illustrated avatar of Mateus" loading="lazy">
-      <div class="tags"><span class="tag-cat">Capoeira</span></div>
-      <h3>Mateus <span class="sample">Sample</span></h3>
-      <p>Capoeira for beginners: music, movement and play</p>
-      <span class="go">View profile and sessions</span>
-    </a>
-    <a class="fac" href="facilitator-pim.html" data-cats="watercolour">
-      <img src="images/avatars/avatar-pim.svg" width="200" height="200" alt="Illustrated avatar of Pim" loading="lazy">
-      <div class="tags"><span class="tag-cat">Watercolour</span><span class="tag-cat">Sketching</span></div>
-      <h3>Pim <span class="sample">Sample</span></h3>
-      <p>Watercolour and sketching, inspired by the view</p>
-      <span class="go">View profile and sessions</span>
-    </a>
-    <a class="fac" href="facilitator-lena.html" data-cats="dance sound-healing">
-      <img src="images/avatars/avatar-lena.svg" width="200" height="200" alt="Illustrated avatar of Lena" loading="lazy">
-      <div class="tags"><span class="tag-cat">Dance</span><span class="tag-cat">Sound Healing</span></div>
-      <h3>Lena <span class="sample">Sample</span></h3>
-      <p>Free-flowing dance to shake off the week, plus sound healing sessions</p>
-      <span class="go">View profile and sessions</span>
-    </a>
+      <div class="dir" data-filter-grid data-loading>
+        <p class="lede">Loading facilitators&hellip;</p>
       </div>
       <p data-filter-empty hidden class="lede">Nobody teaching this yet. Are you? <a href="rent.html">Rent the space</a>.</p>
     </div>
@@ -173,5 +139,83 @@
 </footer>
 
 <script src="js/site.js" defer></script>
+<script defer>
+(function () {
+  var ASSETS = {
+    Sandra: {
+      photo: true,
+      avif: 'images/thelittlesomethingstudio-the-little-something-studio-facilitator-sandra-portrait-400w.avif',
+      webp: 'images/thelittlesomethingstudio-the-little-something-studio-facilitator-sandra-portrait-400w.webp',
+      alt: 'Sandra, contact improvisation facilitator',
+      sample: false
+    },
+    Nok: { avatar: 'images/avatars/avatar-nok.svg', alt: 'Illustrated avatar of Nok', sample: true },
+    Mateus: { avatar: 'images/avatars/avatar-mateus.svg', alt: 'Illustrated avatar of Mateus', sample: true },
+    Pim: { avatar: 'images/avatars/avatar-pim.svg', alt: 'Illustrated avatar of Pim', sample: true },
+    Lena: { avatar: 'images/avatars/avatar-lena.svg', alt: 'Illustrated avatar of Lena', sample: true }
+  };
+  var CAT_LABELS = {
+    yoga: 'Yoga', dance: 'Dance', capoeira: 'Capoeira', watercolour: 'Watercolour',
+    'movement-lab': 'Movement Lab', 'sound-healing': 'Sound Healing'
+  };
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function cardHtml(f) {
+    var asset = ASSETS[f.name] || {};
+    var href = 'facilitator-' + f.name.toLowerCase() + '.html';
+    var media = asset.photo
+      ? '<picture><source type="image/avif" srcset="' + asset.avif + '"><img src="' + asset.webp + '" width="400" height="400" alt="' + escapeHtml(asset.alt) + '" loading="lazy"></picture>'
+      : '<img src="' + (asset.avatar || '') + '" width="200" height="200" alt="' + escapeHtml(asset.alt || f.name) + '" loading="lazy">';
+    var tags = f.categories.map(function (c) {
+      return '<span class="tag-cat">' + escapeHtml(CAT_LABELS[c] || c) + '</span>';
+    }).join('');
+    var blurb = (f.bio || '').split('. ')[0];
+    if (blurb && !/[.!?]$/.test(blurb)) blurb += '.';
+    var sampleTag = asset.sample ? ' <span class="sample">Sample</span>' : '';
+    return '<a class="fac" href="' + href + '" data-cats="' + f.categories.join(' ') + '">'
+      + media
+      + '<div class="tags">' + tags + '</div>'
+      + '<h3>' + escapeHtml(f.name) + sampleTag + '</h3>'
+      + '<p>' + escapeHtml(blurb) + '</p>'
+      + '<span class="go">View profile and sessions</span>'
+      + '</a>';
+  }
+
+  var grid = document.querySelector('[data-filter-grid]');
+  if (!grid) return;
+
+  fetch('/api/facilitators')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var list = data.facilitators || [];
+      grid.removeAttribute('data-loading');
+      grid.innerHTML = list.map(cardHtml).join('');
+
+      var chips = document.querySelectorAll('[data-filter]');
+      var empty = document.querySelector('[data-filter-empty]');
+      var params = new URLSearchParams(location.search);
+      var apply = function (cat) {
+        chips.forEach(function (c) { c.setAttribute('aria-pressed', String(c.dataset.filter === cat)); });
+        grid.querySelectorAll('[data-cats]').forEach(function (card) {
+          card.hidden = cat !== 'all' && card.dataset.cats.split(' ').indexOf(cat) === -1;
+        });
+        if (empty) empty.hidden = !!grid.querySelector('[data-cats]:not([hidden])');
+      };
+      chips.forEach(function (c) {
+        c.addEventListener('click', function () { apply(c.dataset.filter); });
+      });
+      apply(params.get('cat') || 'all');
+    })
+    .catch(function () {
+      grid.removeAttribute('data-loading');
+      grid.innerHTML = '<p class="lede">Couldn\'t load facilitators right now. Please refresh or try again shortly.</p>';
+    });
+})();
+</script>
 </body>
 </html>

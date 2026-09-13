@@ -97,55 +97,8 @@
         </div>
         <a class="btn btn-forest" href="facilitators.html">All classes</a>
       </div>
-      <div class="cards">
-        <article class="card rv">
-          <div class="who">
-            <picture>
-              <source type="image/avif" srcset="images/thelittlesomethingstudio-the-little-something-studio-facilitator-sandra-portrait-400w.avif">
-              <img src="images/thelittlesomethingstudio-the-little-something-studio-facilitator-sandra-portrait-400w.webp" width="400" height="400" alt="Sandra, contact improvisation facilitator" loading="lazy">
-            </picture>
-            <div><b>Sandra</b><small>Movement Lab</small></div>
-          </div>
-          <h3>Contact Improvisation: Essential Principles</h3>
-          <div class="meta">
-            <span><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Wed 16 Sep</span>
-            <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>11:00 to 13:00</span>
-          </div>
-          <div class="foot">
-            <span class="price">฿350<small>฿150 first time</small></span>
-            <a class="btn btn-fill" href="book.html?session=Contact%20Improvisation%2C%20Wed%2016%20Sep%2011%3A00">Book</a>
-          </div>
-        </article>
-        <article class="card rv d1">
-          <div class="who">
-            <img src="images/avatars/avatar-nok.svg" width="200" height="200" alt="" loading="lazy">
-            <div><b>Nok <span class="sample">Sample</span></b><small>Yoga</small></div>
-          </div>
-          <h3>Slow Morning Hatha</h3>
-          <div class="meta">
-            <span><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Sat 19 Sep</span>
-            <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>08:00 to 09:15</span>
-          </div>
-          <div class="foot">
-            <span class="price">฿300</span>
-            <a class="btn btn-fill" href="book.html?session=Slow%20Morning%20Hatha%2C%20Sat%2019%20Sep%2008%3A00">Book</a>
-          </div>
-        </article>
-        <article class="card rv d2">
-          <div class="who">
-            <img src="images/avatars/avatar-pim.svg" width="200" height="200" alt="" loading="lazy">
-            <div><b>Pim <span class="sample">Sample</span></b><small>Watercolour</small></div>
-          </div>
-          <h3>Watercolour Sunday: Mountain Light</h3>
-          <div class="meta">
-            <span><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Sun 20 Sep</span>
-            <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>14:00 to 16:30</span>
-          </div>
-          <div class="foot">
-            <span class="price">฿450</span>
-            <a class="btn btn-fill" href="book.html?session=Watercolour%20Sunday%2C%20Sun%2020%20Sep%2014%3A00">Book</a>
-          </div>
-        </article>
+      <div class="cards" data-upcoming-cards>
+        <p class="lede">Loading upcoming classes&hellip;</p>
       </div>
     </div>
   </section>
@@ -240,5 +193,91 @@
 </footer>
 
 <script src="js/site.js" defer></script>
+<script defer>
+(function () {
+  var ASSETS = {
+    Sandra: {
+      photo: true,
+      avif: 'images/thelittlesomethingstudio-the-little-something-studio-facilitator-sandra-portrait-400w.avif',
+      webp: 'images/thelittlesomethingstudio-the-little-something-studio-facilitator-sandra-portrait-400w.webp',
+      alt: 'Sandra, contact improvisation facilitator',
+      sample: false
+    },
+    Nok: { avatar: 'images/avatars/avatar-nok.svg', sample: true },
+    Mateus: { avatar: 'images/avatars/avatar-mateus.svg', sample: true },
+    Pim: { avatar: 'images/avatars/avatar-pim.svg', sample: true },
+    Lena: { avatar: 'images/avatars/avatar-lena.svg', sample: true }
+  };
+  var CAT_LABELS = {
+    yoga: 'Yoga', dance: 'Dance', capoeira: 'Capoeira', watercolour: 'Watercolour',
+    'movement-lab': 'Movement Lab', 'sound-healing': 'Sound Healing'
+  };
+  var WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  function parseLocal(s) { return new Date(s.replace(' ', 'T')); }
+  function fmtDate(d) { return WEEKDAY[d.getDay()] + ' ' + d.getDate() + ' ' + MONTH[d.getMonth()]; }
+  function fmtTime(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function cardHtml(listing, i) {
+    var asset = ASSETS[listing.facilitator_name] || {};
+    var start = parseLocal(listing.start_time);
+    var end = parseLocal(listing.end_time);
+    var sessionLabel = listing.title_en + ', ' + fmtDate(start) + ' ' + fmtTime(start);
+    var media = asset.photo
+      ? '<picture><source type="image/avif" srcset="' + asset.avif + '"><img src="' + asset.webp + '" width="400" height="400" alt="' + escapeHtml(asset.alt) + '" loading="lazy"></picture>'
+      : '<img src="' + (asset.avatar || '') + '" width="200" height="200" alt="" loading="lazy">';
+    var sampleTag = asset.sample ? ' <span class="sample">Sample</span>' : '';
+    var delay = i === 0 ? '' : ' d' + Math.min(i, 3);
+    return '<article class="card rv' + delay + '">'
+      + '<div class="who">' + media
+      + '<div><b>' + escapeHtml(listing.facilitator_name) + sampleTag + '</b><small>' + escapeHtml(CAT_LABELS[listing.category] || listing.category || '') + '</small></div>'
+      + '</div>'
+      + '<h3>' + escapeHtml(listing.title_en) + '</h3>'
+      + '<div class="meta">'
+      + '<span><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>' + fmtDate(start) + '</span>'
+      + '<span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' + fmtTime(start) + ' to ' + fmtTime(end) + '</span>'
+      + '</div>'
+      + '<div class="foot">'
+      + '<span class="price">฿' + listing.price + '</span>'
+      + '<a class="btn btn-fill" href="book.html?session=' + encodeURIComponent(sessionLabel) + '">Book</a>'
+      + '</div>'
+      + '</article>';
+  }
+
+  var grid = document.querySelector('[data-upcoming-cards]');
+  if (!grid) return;
+
+  fetch('/api/listings')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var upcoming = (data.listings || []).slice(0, 3);
+      if (!upcoming.length) {
+        grid.innerHTML = '<p class="lede">Nothing scheduled just yet. <a href="facilitators.html">See all classes</a>.</p>';
+        return;
+      }
+      grid.innerHTML = upcoming.map(cardHtml).join('');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        grid.querySelectorAll('.rv').forEach(function (el) { io.observe(el); });
+      } else {
+        grid.querySelectorAll('.rv').forEach(function (el) { el.classList.add('in'); });
+      }
+    })
+    .catch(function () {
+      grid.innerHTML = '<p class="lede">Couldn\'t load upcoming classes right now. <a href="facilitators.html">See all classes</a>.</p>';
+    });
+})();
+</script>
 </body>
 </html>
