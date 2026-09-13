@@ -1,5 +1,7 @@
 // POST /api/admin/listings/:id/status
-// Admin only. Body: { status: "approved" | "declined" }
+// Admin only. Body: { status: "approved" | "declined", confirm_conflict?: true }
+// Approving checks for overlapping approved listings first. If conflicts exist and
+// confirm_conflict is not true, returns 409 with the conflict list instead of approving.
 
 import { getSessionUser } from '../../../_auth-helper.js';
 
@@ -14,7 +16,7 @@ export async function onRequestPost(context) {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const { status } = await request.json();
+  const { status, confirm_conflict } = await request.json();
   if (!['approved', 'declined'].includes(status)) {
     return Response.json({ error: 'status must be approved or declined' }, { status: 400 });
   }
@@ -22,12 +24,31 @@ export async function onRequestPost(context) {
   const listingId = params.id;
 
   const listing = await env.DB
-    .prepare('SELECT id FROM listings WHERE id = ?')
+    .prepare('SELECT id, start_time, end_time FROM listings WHERE id = ?')
     .bind(listingId)
     .first();
 
   if (!listing) {
     return Response.json({ error: 'Listing not found' }, { status: 404 });
+  }
+
+  if (status === 'approved' && !confirm_conflict) {
+    const { results: conflicts } = await env.DB
+      .prepare(`
+        SELECT listings.id, listings.title_en, listings.start_time, listings.end_time, users.name AS facilitator_name
+        FROM listings
+        JOIN users ON listings.facilitator_id = users.id
+        WHERE listings.status = 'approved'
+          AND listings.id != ?
+          AND listings.start_time < ?
+          AND listings.end_time > ?
+      `)
+      .bind(listingId, listing.end_time, listing.start_time)
+      .all();
+
+    if (conflicts.length > 0) {
+      return Response.json({ error: 'Time conflict with existing approved listing', conflicts }, { status: 409 });
+    }
   }
 
   await env.DB

@@ -4,98 +4,142 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard: The Little Something Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --terracotta: #C1653D;
+      --forest: #3A4A3F;
+      --cream: #F7F3EC;
+      --charcoal: #2B2B28;
+      --sage: #8FA38E;
+    }
+    * { box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
-      background: #F7F3EC;
-      color: #2B2B28;
+      background: var(--cream);
+      color: var(--charcoal);
       margin: 0;
-      padding: 1.5rem;
+      padding: 2rem 1.5rem;
+      max-width: 720px;
+      margin-inline: auto;
     }
+    h1, h2 { font-family: 'Fraunces', serif; font-weight: 500; margin: 0; }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
-    h1 { font-size: 1.25rem; margin: 0; }
-    h2 { font-size: 1rem; margin: 1.5rem 0 0.75rem; }
+    h1 { font-size: 1.6rem; color: var(--forest); }
+    h2 { font-size: 1.1rem; margin: 2rem 0 1rem; color: var(--forest); }
     button {
-      padding: 8px 14px;
-      background: #C1653D;
+      padding: 9px 16px;
+      background: var(--terracotta);
       color: #fff;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      transition: opacity 0.15s;
     }
-    #logout { background: transparent; color: #2B2B28; border: 1px solid #ccc; }
+    button:hover { opacity: 0.9; }
+    #logout { background: transparent; color: var(--charcoal); border: 1px solid #d8d2c4; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.1rem 1.25rem;
+      box-shadow: 0 1px 8px rgba(58,74,63,0.06);
+    }
+    .stat-label { font-size: 0.78rem; color: #7a7568; margin-bottom: 4px; }
+    .stat-value { font-size: 1.5rem; font-family: 'Fraunces', serif; color: var(--forest); }
+
+    .form-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 10px rgba(58,74,63,0.07);
+    }
+    .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .form-row > div { flex: 1; min-width: 140px; }
+    label { display: block; font-size: 0.78rem; color: #7a7568; margin-bottom: 5px; }
+    input, select {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid #e3ddd0;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+    }
+    #new-listing-msg { font-size: 0.85rem; margin-top: 10px; display: none; }
+    #new-listing-msg.success { color: #2f6b2f; }
+    #new-listing-msg.error { color: #a13a3a; }
+
     .card {
       background: #fff;
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
+      border: 1px solid #eee4d3;
+      border-radius: 14px;
+      padding: 1.1rem 1.3rem;
       margin-bottom: 10px;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+      box-shadow: 0 1px 8px rgba(58,74,63,0.05);
     }
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-    .title { font-weight: 500; font-size: 1rem; }
-    .meta { font-size: 0.85rem; color: #666; margin-top: 2px; }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .title { font-weight: 600; font-size: 1rem; }
+    .meta { font-size: 0.85rem; color: #7a7568; margin-top: 3px; }
     .status {
-      font-size: 0.75rem;
-      padding: 3px 10px;
-      border-radius: 6px;
+      font-size: 0.72rem;
+      padding: 4px 11px;
+      border-radius: 20px;
       flex-shrink: 0;
+      font-weight: 500;
+      text-transform: capitalize;
     }
     .status.approved { background: #e3f0e3; color: #2f6b2f; }
     .status.pending { background: #fbeecb; color: #93650c; }
     .status.declined { background: #f5dede; color: #a13a3a; }
-    #empty { color: #888; font-size: 0.9rem; text-align: center; padding: 2rem 0; }
-
-    .form-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.25rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    #empty { color: #9a9384; font-size: 0.9rem; text-align: center; padding: 2.5rem 0; }
+    .actions { margin-top: 10px; border-top: 1px solid #f0ead9; padding-top: 10px; }
+    .actions button {
+      background: transparent; color: var(--forest); border: 1px solid #d8d2c4;
+      font-size: 0.82rem; padding: 6px 12px;
     }
-    .form-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
+    .roster { margin-top: 10px; border-top: 1px solid #f0ead9; padding-top: 10px; }
+    .roster-count { font-size: 0.78rem; color: #7a7568; margin-bottom: 8px; }
+    .roster-row {
+      display: flex; justify-content: space-between; font-size: 0.85rem;
+      padding: 6px 0; border-bottom: 1px solid #f5f0e5;
     }
-    .form-row > div { flex: 1; min-width: 140px; }
-    label {
-      display: block;
-      font-size: 0.8rem;
-      color: #555;
-      margin-bottom: 4px;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      box-sizing: border-box;
-    }
-    #new-listing-msg {
-      font-size: 0.85rem;
-      margin-top: 10px;
-      display: none;
-    }
-    #new-listing-msg.success { color: #2f6b2f; }
-    #new-listing-msg.error { color: #a13a3a; }
+    .roster-empty { font-size: 0.85rem; color: #9a9384; }
+    .pay-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; text-transform: capitalize; }
+    .pay-status.confirmed { background: #e3f0e3; color: #2f6b2f; }
+    .pay-status.pending { background: #fbeecb; color: #93650c; }
   </style>
 </head>
 <body>
   <div class="header">
     <h1 id="greeting">Dashboard</h1>
     <button id="logout">Log out</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total listings</div>
+      <div class="stat-value" id="stat-total">...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Approved</div>
+      <div class="stat-value" id="stat-approved">...</div>
+    </div>
   </div>
 
   <h2>New listing</h2>
@@ -165,8 +209,11 @@
       const { listings } = await listingsRes.json();
       const container = document.getElementById('listings');
 
+      document.getElementById('stat-total').textContent = listings.length;
+      document.getElementById('stat-approved').textContent = listings.filter(l => l.status === 'approved').length;
+
       if (listings.length === 0) {
-        container.innerHTML = '<div id="empty">No listings yet.</div>';
+        container.innerHTML = '<div id="empty">No listings yet. Create one above.</div>';
         return;
       }
 
@@ -175,12 +222,45 @@
           <div class="card-top">
             <div>
               <div class="title">${l.title_en}</div>
-              <div class="meta">${l.start_time} - ${l.end_time}</div>
+              <div class="meta">${l.start_time} to ${l.end_time}</div>
             </div>
             <span class="status ${l.status}">${l.status}</span>
           </div>
+          <div class="actions">
+            <button class="view-attendees-btn" data-id="${l.id}">View attendees</button>
+          </div>
+          <div class="roster" id="roster-${l.id}" style="display:none;"></div>
         </div>
       `).join('');
+
+      document.querySelectorAll('.view-attendees-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleRoster(btn.dataset.id));
+      });
+    }
+
+    async function toggleRoster(listingId) {
+      const rosterEl = document.getElementById(`roster-${listingId}`);
+      if (rosterEl.style.display === 'block') {
+        rosterEl.style.display = 'none';
+        return;
+      }
+      const res = await fetch(`/api/my-listings/${listingId}/attendees`, { credentials: 'include' });
+      if (!res.ok) {
+        rosterEl.innerHTML = '<div class="roster-empty">Could not load attendees.</div>';
+        rosterEl.style.display = 'block';
+        return;
+      }
+      const { attendees, listing, spots_filled } = await res.json();
+      rosterEl.innerHTML = attendees.length === 0
+        ? '<div class="roster-empty">No bookings yet.</div>'
+        : `<div class="roster-count">${spots_filled}${listing.capacity ? ' / ' + listing.capacity : ''} booked</div>` +
+          attendees.map(a => `
+            <div class="roster-row">
+              <span>${a.attendee_name}${a.attendee_phone ? ' &middot; ' + a.attendee_phone : ''}</span>
+              <span class="pay-status ${a.payment_status}">${a.payment_status}</span>
+            </div>
+          `).join('');
+      rosterEl.style.display = 'block';
     }
 
     document.getElementById('new-listing-form').addEventListener('submit', async (e) => {
