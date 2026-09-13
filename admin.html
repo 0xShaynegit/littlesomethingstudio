@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — The Little Something Studio</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F7F3EC;
+      color: #2B2B28;
+      margin: 0;
+      padding: 1.5rem;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    h1 { font-size: 1.25rem; margin: 0; }
+    button {
+      padding: 8px 14px;
+      background: #C1653D;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    #logout { background: transparent; color: #2B2B28; border: 1px solid #ccc; }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .title { font-weight: 500; font-size: 1rem; }
+    .meta { font-size: 0.85rem; color: #666; margin-top: 2px; }
+    .status {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .status.approved { background: #e3f0e3; color: #2f6b2f; }
+    .status.pending { background: #fbeecb; color: #93650c; }
+    .status.declined { background: #f5dede; color: #a13a3a; }
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+    }
+    .actions button { flex: 1; font-size: 0.85rem; padding: 6px; }
+    .decline-btn { background: transparent; color: #a13a3a; border: 1px solid #e0b8b8; }
+    #empty { color: #888; font-size: 0.9rem; text-align: center; padding: 2rem 0; }
+    h2 { font-size: 1rem; margin: 1.5rem 0 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 id="greeting">Admin</h1>
+    <button id="logout">Log out</button>
+  </div>
+  <h2>Pending approval</h2>
+  <div id="pending"></div>
+  <h2>All listings</h2>
+  <div id="all"></div>
+
+  <script>
+    let listings = [];
+
+    async function init() {
+      const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+      if (!meRes.ok) {
+        window.location.href = '/login.html';
+        return;
+      }
+      const { user } = await meRes.json();
+      if (user.role !== 'admin') {
+        document.body.innerHTML = '<p style="padding:2rem;">Not authorized.</p>';
+        return;
+      }
+      document.getElementById('greeting').textContent = `Admin — ${user.name}`;
+
+      const res = await fetch('/api/admin/listings', { credentials: 'include' });
+      const data = await res.json();
+      listings = data.listings;
+      render();
+    }
+
+    function render() {
+      const pending = listings.filter(l => l.status === 'pending');
+      const pendingEl = document.getElementById('pending');
+      const allEl = document.getElementById('all');
+
+      pendingEl.innerHTML = pending.length === 0
+        ? '<div id="empty">Nothing waiting on approval.</div>'
+        : pending.map(cardHtml).join('');
+
+      allEl.innerHTML = listings.map(cardHtml).join('');
+
+      document.querySelectorAll('[data-approve]').forEach(btn => {
+        btn.addEventListener('click', () => updateStatus(btn.dataset.approve, 'approved'));
+      });
+      document.querySelectorAll('[data-decline]').forEach(btn => {
+        btn.addEventListener('click', () => updateStatus(btn.dataset.decline, 'declined'));
+      });
+    }
+
+    function cardHtml(l) {
+      const actionButtons = l.status === 'pending' ? `
+        <div class="actions">
+          <button class="decline-btn" data-decline="${l.id}">Decline</button>
+          <button data-approve="${l.id}">Approve</button>
+        </div>
+      ` : '';
+      return `
+        <div class="card">
+          <div class="card-top">
+            <div>
+              <div class="title">${l.title_en}</div>
+              <div class="meta">${l.facilitator_name} &middot; ${l.start_time} - ${l.end_time}</div>
+            </div>
+            <span class="status ${l.status}">${l.status}</span>
+          </div>
+          ${actionButtons}
+        </div>
+      `;
+    }
+
+    async function updateStatus(id, status) {
+      await fetch(`/api/admin/listings/${id}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status })
+      });
+      const listing = listings.find(l => l.id == id);
+      if (listing) listing.status = status;
+      render();
+    }
+
+    document.getElementById('logout').addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/login.html';
+    });
+
+    init();
+  </script>
+</body>
+</html>
