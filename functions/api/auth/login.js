@@ -2,13 +2,7 @@
 // Body: { email, password }
 // Sets an httpOnly session cookie on success
 
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
+import { verifyPassword } from '../_password.js';
 
 function generateSessionId() {
   return crypto.randomUUID();
@@ -31,8 +25,8 @@ export async function onRequestPost(context) {
     return Response.json({ error: 'Invalid email or password' }, { status: 401 });
   }
 
-  const hashedInput = await hashPassword(password);
-  if (hashedInput !== user.password_hash) {
+  const ok = await verifyPassword(password, user.password_hash);
+  if (!ok) {
     return Response.json({ error: 'Invalid email or password' }, { status: 401 });
   }
 

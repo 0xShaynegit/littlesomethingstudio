@@ -67,6 +67,19 @@
       margin-top: 10px; padding: 8px 10px; background: #fbeecb; border: 1px solid #edd39a;
       border-radius: 8px; font-size: 0.8rem; color: #7a4e0c; line-height: 1.5;
     }
+    .user-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid #f0ead9; font-size: 0.88rem;
+    }
+    .user-row:last-child { border-bottom: none; }
+    .user-name { font-weight: 500; }
+    .user-email { color: #7a7568; font-size: 0.8rem; }
+    .user-row button { font-size: 0.8rem; padding: 6px 12px; }
+    .no-password { color: #93650c; font-size: 0.72rem; }
+    .reset-link-box {
+      margin-top: 8px; padding: 8px 10px; background: #f5f0e5; border-radius: 8px;
+      font-size: 0.78rem; word-break: break-all;
+    }
   </style>
 </head>
 <body>
@@ -90,6 +103,9 @@
   <h2>All listings</h2>
   <div id="all"></div>
 
+  <h2>Facilitators &amp; admin accounts</h2>
+  <div class="card" id="users"></div>
+
   <script>
     let listings = [];
 
@@ -105,11 +121,54 @@
 
       await loadStats();
       await loadCalendar();
+      await loadUsers();
 
       const res = await fetch('/api/admin/listings', { credentials: 'include' });
       const data = await res.json();
       listings = data.listings;
       render();
+    }
+
+    async function loadUsers() {
+      const res = await fetch('/api/admin/users', { credentials: 'include' });
+      const { users } = await res.json();
+      const container = document.getElementById('users');
+
+      container.innerHTML = users.map(u => `
+        <div class="user-row">
+          <div>
+            <span class="user-name">${u.name}</span>
+            <span class="user-email">&middot; ${u.email} &middot; ${u.role}</span>
+            ${u.has_password ? '' : '<div class="no-password">No password set yet</div>'}
+          </div>
+          <button data-reset-link="${u.id}">Generate reset link</button>
+        </div>
+        <div class="reset-link-box" id="reset-link-${u.id}" hidden></div>
+      `).join('');
+
+      container.querySelectorAll('[data-reset-link]').forEach(btn => {
+        btn.addEventListener('click', () => generateResetLink(btn.dataset.resetLink));
+      });
+    }
+
+    async function generateResetLink(userId) {
+      const res = await fetch('/api/admin/reset-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ user_id: Number(userId) })
+      });
+      const data = await res.json();
+      const box = document.getElementById(`reset-link-${userId}`);
+
+      if (!res.ok) {
+        box.textContent = data.error || 'Could not generate a link.';
+        box.hidden = false;
+        return;
+      }
+
+      box.innerHTML = `Send this to them (valid 24 hours):<br>${data.reset_url}`;
+      box.hidden = false;
     }
 
     async function loadStats() {
