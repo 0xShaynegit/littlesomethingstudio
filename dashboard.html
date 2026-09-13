@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — The Little Something Studio</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F7F3EC;
+      color: #2B2B28;
+      margin: 0;
+      padding: 1.5rem;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    h1 { font-size: 1.25rem; margin: 0; }
+    button {
+      padding: 8px 14px;
+      background: #C1653D;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    #logout { background: transparent; color: #2B2B28; border: 1px solid #ccc; }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .title { font-weight: 500; font-size: 1rem; }
+    .meta { font-size: 0.85rem; color: #666; margin-top: 2px; }
+    .status {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .status.approved { background: #e3f0e3; color: #2f6b2f; }
+    .status.pending { background: #fbeecb; color: #93650c; }
+    .status.declined { background: #f5dede; color: #a13a3a; }
+    #empty { color: #888; font-size: 0.9rem; text-align: center; padding: 2rem 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 id="greeting">Dashboard</h1>
+    <button id="logout">Log out</button>
+  </div>
+  <div id="listings"></div>
+
+  <script>
+    async function init() {
+      const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+      if (!meRes.ok) {
+        window.location.href = '/login.html';
+        return;
+      }
+      const { user } = await meRes.json();
+      document.getElementById('greeting').textContent = `${user.name}'s listings`;
+
+      const listingsRes = await fetch('/api/my-listings', { credentials: 'include' });
+      const { listings } = await listingsRes.json();
+      const container = document.getElementById('listings');
+
+      if (listings.length === 0) {
+        container.innerHTML = '<div id="empty">No listings yet.</div>';
+        return;
+      }
+
+      container.innerHTML = listings.map(l => `
+        <div class="card">
+          <div class="card-top">
+            <div>
+              <div class="title">${l.title_en}</div>
+              <div class="meta">${l.start_time} - ${l.end_time}</div>
+            </div>
+            <span class="status ${l.status}">${l.status}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('logout').addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/login.html';
+    });
+
+    init();
+  </script>
+</body>
+</html>
