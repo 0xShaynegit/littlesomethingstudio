@@ -1,7 +1,7 @@
 // GET /api/admin/listings
 // Admin only. Returns all listings across all facilitators, any status.
 
-import { getSessionUser } from '../../_auth-helper.js';
+import { getSessionUser } from '../_auth-helper.js';
 
 export async function onRequestGet(context) {
   const { env } = context;
