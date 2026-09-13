@@ -19,6 +19,7 @@
       margin-bottom: 1.5rem;
     }
     h1 { font-size: 1.25rem; margin: 0; }
+    h2 { font-size: 1rem; margin: 1.5rem 0 0.75rem; }
     button {
       padding: 8px 14px;
       background: #C1653D;
@@ -53,6 +54,42 @@
     .status.pending { background: #fbeecb; color: #93650c; }
     .status.declined { background: #f5dede; color: #a13a3a; }
     #empty { color: #888; font-size: 0.9rem; text-align: center; padding: 2rem 0; }
+
+    .form-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    }
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .form-row > div { flex: 1; min-width: 140px; }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+    }
+    #new-listing-msg {
+      font-size: 0.85rem;
+      margin-top: 10px;
+      display: none;
+    }
+    #new-listing-msg.success { color: #2f6b2f; }
+    #new-listing-msg.error { color: #a13a3a; }
   </style>
 </head>
 <body>
@@ -60,18 +97,69 @@
     <h1 id="greeting">Dashboard</h1>
     <button id="logout">Log out</button>
   </div>
+
+  <h2>New listing</h2>
+  <div class="form-card">
+    <form id="new-listing-form">
+      <div class="form-row">
+        <div>
+          <label for="title">Class title</label>
+          <input type="text" id="title" required>
+        </div>
+        <div>
+          <label for="category">Category</label>
+          <select id="category">
+            <option value="yoga">Yoga</option>
+            <option value="dance">Dance</option>
+            <option value="capoeira">Capoeira</option>
+            <option value="watercolor">Watercolour</option>
+            <option value="movement">Movement lab</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label for="start">Start time</label>
+          <input type="datetime-local" id="start" required>
+        </div>
+        <div>
+          <label for="end">End time</label>
+          <input type="datetime-local" id="end" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label for="price">Price (THB)</label>
+          <input type="number" id="price" min="0">
+        </div>
+        <div>
+          <label for="capacity">Capacity</label>
+          <input type="number" id="capacity" min="1">
+        </div>
+      </div>
+      <button type="submit">Submit for approval</button>
+      <div id="new-listing-msg"></div>
+    </form>
+  </div>
+
+  <h2 id="listings-heading">My listings</h2>
   <div id="listings"></div>
 
   <script>
-    async function init() {
+    async function loadUser() {
       const meRes = await fetch('/api/auth/me', { credentials: 'include' });
       if (!meRes.ok) {
         window.location.href = '/login.html';
-        return;
+        return null;
       }
       const { user } = await meRes.json();
-      document.getElementById('greeting').textContent = `${user.name}'s listings`;
+      document.getElementById('greeting').textContent = `${user.name}'s dashboard`;
+      document.getElementById('listings-heading').textContent = `${user.name}'s listings`;
+      return user;
+    }
 
+    async function loadListings() {
       const listingsRes = await fetch('/api/my-listings', { credentials: 'include' });
       const { listings } = await listingsRes.json();
       const container = document.getElementById('listings');
@@ -94,12 +182,49 @@
       `).join('');
     }
 
+    document.getElementById('new-listing-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('new-listing-msg');
+      msg.style.display = 'none';
+
+      const body = {
+        title_en: document.getElementById('title').value,
+        category: document.getElementById('category').value,
+        start_time: document.getElementById('start').value.replace('T', ' '),
+        end_time: document.getElementById('end').value.replace('T', ' '),
+        price: document.getElementById('price').value || null,
+        capacity: document.getElementById('capacity').value || null
+      };
+
+      const res = await fetch('/api/my-listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+
+      msg.style.display = 'block';
+      if (res.ok) {
+        msg.className = 'success';
+        msg.textContent = 'Submitted. Waiting on admin approval.';
+        document.getElementById('new-listing-form').reset();
+        loadListings();
+      } else {
+        msg.className = 'error';
+        msg.textContent = data.error || 'Something went wrong.';
+      }
+    });
+
     document.getElementById('logout').addEventListener('click', async () => {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
       window.location.href = '/login.html';
     });
 
-    init();
+    (async () => {
+      const user = await loadUser();
+      if (user) await loadListings();
+    })();
   </script>
 </body>
 </html>
