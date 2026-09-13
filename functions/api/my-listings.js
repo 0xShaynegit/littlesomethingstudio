@@ -1,7 +1,7 @@
 // GET /api/my-listings
 // Returns listings belonging to the logged-in facilitator, any status
 
-import { getSessionUser } from '../_auth-helper.js';
+import { getSessionUser } from './_auth-helper.js';
 
 export async function onRequestGet(context) {
   const { env } = context;
