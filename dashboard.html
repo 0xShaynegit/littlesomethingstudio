@@ -284,7 +284,7 @@
       body.set('price', document.getElementById('price').value || '');
       body.set('capacity', document.getElementById('capacity').value || '');
       const photoFile = document.getElementById('photo').files[0];
-      if (photoFile) body.set('photo', photoFile);
+      if (photoFile) body.set('photo', await window.resizeToWebp(photoFile));
 
       const res = await fetch('/api/my-listings', {
         method: 'POST',

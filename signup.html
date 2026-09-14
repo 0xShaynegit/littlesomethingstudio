@@ -103,6 +103,7 @@
     <div id="success"></div>
   </div>
 
+  <script src="js/photo-upload.js"></script>
   <script>
     document.getElementById('signup-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -117,9 +118,9 @@
       body.set('password', document.getElementById('password').value);
       body.set('bio', document.getElementById('bio').value);
       const photoFile = document.getElementById('photo').files[0];
-      if (photoFile) body.set('photo', photoFile);
 
       try {
+        if (photoFile) body.set('photo', await window.resizeToWebp(photoFile));
         const res = await fetch('/api/auth/signup', { method: 'POST', body });
         const data = await res.json();
 
