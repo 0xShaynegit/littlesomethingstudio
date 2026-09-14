@@ -15,9 +15,21 @@ export async function onRequestGet(context) {
 
   await archivePastListings(env);
 
+  // A facilitator's own dashboard should still show their past classes
+  // (for the roster), even though archived rows drop off public listing
+  // pages. Combine live and archived rows for this facilitator.
   const { results } = await env.DB
-    .prepare('SELECT * FROM listings WHERE facilitator_id = ? ORDER BY start_time ASC')
-    .bind(user.id)
+    .prepare(`
+      SELECT id, facilitator_id, space_id, title_en, title_th, description_en, description_th,
+        category, start_time, end_time, price, capacity, status, photo_key, created_at
+      FROM listings WHERE facilitator_id = ?
+      UNION ALL
+      SELECT id, facilitator_id, space_id, title_en, title_th, description_en, description_th,
+        category, start_time, end_time, price, capacity, status, photo_key, created_at
+      FROM listings_archive WHERE facilitator_id = ?
+      ORDER BY start_time DESC
+    `)
+    .bind(user.id, user.id)
     .all();
 
   return Response.json({ listings: results });

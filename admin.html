@@ -64,6 +64,16 @@
     .decline-btn { background: transparent; color: #a13a3a; border: 1px solid #e5c4c4; }
     #empty { color: #9a9384; font-size: 0.9rem; text-align: center; padding: 2rem 0; }
     .pending-photo, .listing-photo { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; margin-bottom: 8px; display: block; }
+    .roster { margin-top: 10px; border-top: 1px solid #f0ead9; padding-top: 10px; }
+    .roster-count { font-size: 0.78rem; color: #7a7568; margin-bottom: 8px; }
+    .roster-row {
+      display: flex; justify-content: space-between; font-size: 0.85rem;
+      padding: 6px 0; border-bottom: 1px solid #f5f0e5;
+    }
+    .roster-empty { font-size: 0.85rem; color: #9a9384; }
+    .pay-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; text-transform: capitalize; }
+    .pay-status.confirmed { background: #e3f0e3; color: #2f6b2f; }
+    .pay-status.pending { background: #fbeecb; color: #93650c; }
     .conflict-warning {
       margin-top: 10px; padding: 8px 10px; background: #fbeecb; border: 1px solid #edd39a;
       border-radius: 8px; font-size: 0.8rem; color: #7a4e0c; line-height: 1.5;
@@ -264,6 +274,9 @@
       document.querySelectorAll('[data-decline]').forEach(btn => {
         btn.addEventListener('click', () => updateStatus(btn.dataset.decline, 'declined'));
       });
+      document.querySelectorAll('.view-attendees-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleRoster(btn.dataset.id));
+      });
     }
 
     function cardHtml(l) {
@@ -288,8 +301,37 @@
             <span class="status ${l.status}">${l.status}</span>
           </div>
           ${conflictWarning}
+          <div class="actions">
+            <button class="view-attendees-btn" data-id="${l.id}">View attendees</button>
+          </div>
+          <div class="roster" id="roster-${l.id}" style="display:none;"></div>
           ${actionButtons}
         </div>`;
+    }
+
+    async function toggleRoster(listingId) {
+      const rosterEl = document.getElementById(`roster-${listingId}`);
+      if (rosterEl.style.display === 'block') {
+        rosterEl.style.display = 'none';
+        return;
+      }
+      const res = await fetch(`/api/my-listings/${listingId}/attendees`, { credentials: 'include' });
+      if (!res.ok) {
+        rosterEl.innerHTML = '<div class="roster-empty">Could not load attendees.</div>';
+        rosterEl.style.display = 'block';
+        return;
+      }
+      const { attendees, listing, spots_filled } = await res.json();
+      rosterEl.innerHTML = attendees.length === 0
+        ? '<div class="roster-empty">No bookings yet.</div>'
+        : `<div class="roster-count">${spots_filled}${listing.capacity ? ' / ' + listing.capacity : ''} booked</div>` +
+          attendees.map(a => `
+            <div class="roster-row">
+              <span>${a.attendee_name}${a.attendee_phone ? ' &middot; ' + a.attendee_phone : ''}</span>
+              <span class="pay-status ${a.payment_status}">${a.payment_status}</span>
+            </div>
+          `).join('');
+      rosterEl.style.display = 'block';
     }
 
     async function updateStatus(id, status, confirmConflict = false) {

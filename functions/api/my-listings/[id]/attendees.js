@@ -13,10 +13,19 @@ export async function onRequestGet(context) {
 
   const listingId = params.id;
 
-  const listing = await env.DB
+  let listing = await env.DB
     .prepare('SELECT id, facilitator_id, title_en, capacity FROM listings WHERE id = ?')
     .bind(listingId)
     .first();
+  let archived = false;
+
+  if (!listing) {
+    listing = await env.DB
+      .prepare('SELECT id, facilitator_id, title_en, capacity FROM listings_archive WHERE id = ?')
+      .bind(listingId)
+      .first();
+    archived = true;
+  }
 
   if (!listing) {
     return Response.json({ error: 'Listing not found' }, { status: 404 });
@@ -31,7 +40,7 @@ export async function onRequestGet(context) {
   const { results: attendees } = await env.DB
     .prepare(`
       SELECT id, attendee_name, attendee_phone, attendee_line, payment_method, payment_status, created_at
-      FROM bookings
+      FROM ${archived ? 'bookings_archive' : 'bookings'}
       WHERE listing_id = ?
       ORDER BY created_at ASC
     `)
