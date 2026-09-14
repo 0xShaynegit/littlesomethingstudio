@@ -1,114 +1,132 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Log in — The Little Something Studio</title>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #F7F3EC;
-      color: #2B2B28;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .card {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 360px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    }
-    h1 {
-      font-size: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-    label {
-      display: block;
-      font-size: 0.85rem;
-      margin-bottom: 4px;
-      color: #555;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-sizing: border-box;
-      font-size: 1rem;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #C1653D;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button:hover {
-      opacity: 0.9;
-    }
-    #error {
-      color: #b3261e;
-      font-size: 0.85rem;
-      margin-top: 1rem;
-      display: none;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Log in | The Little Something Studio</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#2E3A32">
+<link rel="icon" href="images/thelittlesomethingstudio-the-little-something-studio-logo-circle-transparent-400w.webp" type="image/webp">
+<link rel="preload" href="fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem('tlss-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-  <div class="card">
-    <h1>Facilitator / Admin Login</h1>
-    <form id="login-form">
-      <label for="email">Email</label>
-      <input type="email" id="email" required>
-      <label for="password">Password</label>
-      <input type="password" id="password" required>
-      <button type="submit">Log in</button>
-    </form>
-    <div id="error"></div>
-  </div>
 
-  <script>
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const errorEl = document.getElementById('error');
-      errorEl.style.display = 'none';
+<main class="auth">
+  <section class="auth-visual" aria-label="The studio">
+    <picture>
+      <source type="image/avif" srcset="images/thelittlesomethingstudio-the-little-something-studio-contact-improvisation-group-reflection-800w.avif 800w, images/thelittlesomethingstudio-the-little-something-studio-contact-improvisation-group-reflection-2160w.avif 2160w" sizes="(max-width: 820px) 100vw, 55vw">
+      <img src="images/thelittlesomethingstudio-the-little-something-studio-contact-improvisation-group-reflection-800w.webp" srcset="images/thelittlesomethingstudio-the-little-something-studio-contact-improvisation-group-reflection-800w.webp 800w, images/thelittlesomethingstudio-the-little-something-studio-contact-improvisation-group-reflection-2160w.webp 2160w" sizes="(max-width: 820px) 100vw, 55vw" width="2160" height="1296" alt="A contact improvisation group posing in front of the studio mirrors with the mountains behind" fetchpriority="high">
+    </picture>
+    <div class="inner">
+      <a class="auth-brand" href="index.html">
+        <img src="images/thelittlesomethingstudio-the-little-something-studio-logo-circle-transparent-400w.webp" width="400" height="400" alt="">
+        <span>The Little Something<small>Studio console</small></span>
+      </a>
+      <div>
+        <h2 class="display">The room is <em>ready</em> when you are.</h2>
+        <p>Manage your classes, see who has booked, and keep the calendar honest. One login for facilitators and the studio team.</p>
+      </div>
+    </div>
+  </section>
 
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-          credentials: 'include'
-        });
-        const data = await res.json();
+  <section class="auth-panel">
+    <div class="auth-card">
+      <span class="eyebrow">Facilitator and admin</span>
+      <h1 class="display">Welcome back.</h1>
+      <p class="lede">Sign in to reach your dashboard.</p>
 
-        if (!res.ok) {
-          errorEl.textContent = data.error || 'Login failed';
-          errorEl.style.display = 'block';
-          return;
-        }
+      <form class="auth-form" id="login-form" novalidate>
+        <div class="field" id="f-email">
+          <label for="email">Email</label>
+          <input class="control" type="email" id="email" name="email" autocomplete="email" inputmode="email" spellcheck="false" required>
+          <div class="field-error" aria-live="polite"><span></span></div>
+        </div>
+        <div class="field" id="f-password">
+          <label for="password">Password</label>
+          <div class="pw-wrap">
+            <input class="control" type="password" id="password" name="password" autocomplete="current-password" required>
+            <button class="pw-toggle" type="button" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+          <div class="field-error" aria-live="polite"><span></span></div>
+        </div>
+        <div class="reveal" id="form-error" role="alert">
+          <div><div class="notice notice-bad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span></span></div></div>
+        </div>
+        <button class="btn btn-fill btn-block" type="submit" id="submit"><span class="label">Log in</span><span class="spinner" aria-hidden="true"></span></button>
+      </form>
 
-        if (data.user.role === 'admin') {
-          window.location.href = '/admin.html';
-        } else {
-          window.location.href = '/dashboard.html';
-        }
-      } catch (err) {
-        errorEl.textContent = 'Something went wrong. Try again.';
-        errorEl.style.display = 'block';
+      <p class="auth-foot">Forgotten your password, or never set one? Message the studio on <a href="https://lin.ee/PCBbl8m" target="_blank" rel="noopener">LINE</a> and they will send you a reset link.</p>
+    </div>
+  </section>
+</main>
+
+<script src="js/app.js"></script>
+<script>
+(function () {
+  var form = document.getElementById('login-form');
+  var email = document.getElementById('email');
+  var password = document.getElementById('password');
+  var fEmail = document.getElementById('f-email');
+  var fPassword = document.getElementById('f-password');
+  var formError = document.getElementById('form-error');
+  var submit = document.getElementById('submit');
+  var toggle = document.querySelector('.pw-toggle');
+
+  toggle.addEventListener('click', function () {
+    var show = password.type === 'password';
+    password.type = show ? 'text' : 'password';
+    toggle.textContent = show ? 'Hide' : 'Show';
+    toggle.setAttribute('aria-pressed', String(show));
+    toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    password.focus();
+  });
+
+  function validate() {
+    var ok = true;
+    var e = email.value.trim();
+    if (!e) { App.setFieldError(fEmail, 'Enter your email'); ok = false; }
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { App.setFieldError(fEmail, 'That does not look like an email address'); ok = false; }
+    else App.setFieldError(fEmail, '');
+    if (!password.value) { App.setFieldError(fPassword, 'Enter your password'); ok = false; }
+    else App.setFieldError(fPassword, '');
+    return ok;
+  }
+
+  email.addEventListener('input', function () { if (fEmail.dataset.invalid === 'true') validate(); });
+  password.addEventListener('input', function () { if (fPassword.dataset.invalid === 'true') validate(); });
+
+  form.addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    App.reveal(formError, false);
+    if (!validate()) return;
+    App.busy(submit, true);
+    try {
+      var res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: email.value.trim(), password: password.value })
+      });
+      var data = await res.json();
+      if (!res.ok) {
+        formError.querySelector('.notice span').textContent = data.error || 'Login failed';
+        App.reveal(formError, true);
+        App.busy(submit, false);
+        return;
       }
-    });
-  </script>
+      submit.querySelector('.label').textContent = 'Opening your dashboard';
+      location.href = data.user.role === 'admin' ? '/admin.html' : '/dashboard.html';
+    } catch (err) {
+      formError.querySelector('.notice span').textContent = 'Something went wrong. Check your connection and try again.';
+      App.reveal(formError, true);
+      App.busy(submit, false);
+    }
+  });
+})();
+</script>
 </body>
 </html>

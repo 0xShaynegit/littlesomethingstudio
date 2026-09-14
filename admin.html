@@ -1,373 +1,478 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin: The Little Something Studio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --terracotta: #C1653D;
-      --forest: #3A4A3F;
-      --cream: #F7F3EC;
-      --charcoal: #2B2B28;
-      --sage: #8FA38E;
-    }
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--cream);
-      color: var(--charcoal);
-      margin: 0;
-      padding: 2rem 1.5rem;
-      max-width: 820px;
-      margin-inline: auto;
-    }
-    h1, h2 { font-family: 'Fraunces', serif; font-weight: 500; margin: 0; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-    h1 { font-size: 1.6rem; color: var(--forest); }
-    h2 { font-size: 1.1rem; margin: 2rem 0 1rem; color: var(--forest); }
-    button {
-      padding: 9px 16px; background: var(--terracotta); color: #fff; border: none;
-      border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-family: 'Inter', sans-serif;
-    }
-    #logout { background: transparent; color: var(--charcoal); border: 1px solid #d8d2c4; }
-
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1rem; }
-    .stat-card { background: #fff; border-radius: 14px; padding: 1rem 0.9rem; box-shadow: 0 1px 8px rgba(58,74,63,0.06); }
-    .stat-label { font-size: 0.7rem; color: #7a7568; margin-bottom: 4px; }
-    .stat-value { font-size: 1.25rem; font-family: 'Fraunces', serif; color: var(--forest); }
-
-    .calendar-strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 0.5rem; }
-    .day-chip {
-      flex-shrink: 0; min-width: 64px; text-align: center; padding: 8px 6px;
-      border-radius: 10px; background: #fff; border: 1px solid #eee4d3; font-size: 0.72rem;
-    }
-    .day-chip.has-classes { background: #f5e2d5; border-color: #e5c19e; color: var(--terracotta); font-weight: 600; }
-    .day-chip .date-label { font-size: 0.65rem; color: #9a9384; margin-top: 2px; }
-    .day-chip.has-classes .date-label { color: var(--terracotta); opacity: 0.8; }
-
-    .card {
-      background: #fff; border: 1px solid #eee4d3; border-radius: 14px; padding: 1.1rem 1.3rem;
-      margin-bottom: 10px; box-shadow: 0 1px 8px rgba(58,74,63,0.05);
-    }
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
-    .title { font-weight: 600; font-size: 1rem; }
-    .meta { font-size: 0.85rem; color: #7a7568; margin-top: 3px; }
-    .status { font-size: 0.72rem; padding: 4px 11px; border-radius: 20px; flex-shrink: 0; font-weight: 500; text-transform: capitalize; }
-    .status.approved { background: #e3f0e3; color: #2f6b2f; }
-    .status.pending { background: #fbeecb; color: #93650c; }
-    .status.declined { background: #f5dede; color: #a13a3a; }
-    .actions { display: flex; gap: 8px; margin-top: 12px; border-top: 1px solid #f0ead9; padding-top: 12px; }
-    .actions button { flex: 1; font-size: 0.85rem; padding: 7px; }
-    .decline-btn { background: transparent; color: #a13a3a; border: 1px solid #e5c4c4; }
-    #empty { color: #9a9384; font-size: 0.9rem; text-align: center; padding: 2rem 0; }
-    .pending-photo, .listing-photo { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; margin-bottom: 8px; display: block; }
-    .roster { margin-top: 10px; border-top: 1px solid #f0ead9; padding-top: 10px; }
-    .roster-count { font-size: 0.78rem; color: #7a7568; margin-bottom: 8px; }
-    .roster-row {
-      display: flex; justify-content: space-between; font-size: 0.85rem;
-      padding: 6px 0; border-bottom: 1px solid #f5f0e5;
-    }
-    .roster-empty { font-size: 0.85rem; color: #9a9384; }
-    .pay-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; text-transform: capitalize; }
-    .pay-status.confirmed { background: #e3f0e3; color: #2f6b2f; }
-    .pay-status.pending { background: #fbeecb; color: #93650c; }
-    .conflict-warning {
-      margin-top: 10px; padding: 8px 10px; background: #fbeecb; border: 1px solid #edd39a;
-      border-radius: 8px; font-size: 0.8rem; color: #7a4e0c; line-height: 1.5;
-    }
-    .user-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 0; border-bottom: 1px solid #f0ead9; font-size: 0.88rem;
-    }
-    .user-row:last-child { border-bottom: none; }
-    .user-name { font-weight: 500; }
-    .user-email { color: #7a7568; font-size: 0.8rem; }
-    .user-row button { font-size: 0.8rem; padding: 6px 12px; }
-    .no-password { color: #93650c; font-size: 0.72rem; }
-    .reset-link-box {
-      margin-top: 8px; padding: 8px 10px; background: #f5f0e5; border-radius: 8px;
-      font-size: 0.78rem; word-break: break-all;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Admin | The Little Something Studio</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#3A4A3F">
+<link rel="icon" href="images/thelittlesomethingstudio-the-little-something-studio-logo-circle-transparent-400w.webp" type="image/webp">
+<link rel="preload" href="fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem('tlss-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-  <div class="header">
-    <h1 id="greeting">Admin</h1>
-    <button id="logout">Log out</button>
-  </div>
 
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-label">Confirmed revenue</div><div class="stat-value" id="stat-revenue">...</div></div>
-    <div class="stat-card"><div class="stat-label">Confirmed bookings</div><div class="stat-value" id="stat-bookings">...</div></div>
-    <div class="stat-card"><div class="stat-label">Awaiting payment</div><div class="stat-value" id="stat-pending-payment">...</div></div>
-    <div class="stat-card"><div class="stat-label">Facilitators</div><div class="stat-value" id="stat-facilitators">...</div></div>
-  </div>
+<div class="shell">
+  <aside class="side">
+    <a class="auth-brand" href="index.html">
+      <img src="images/thelittlesomethingstudio-the-little-something-studio-logo-circle-transparent-400w.webp" width="400" height="400" alt="">
+      <span>The Little Something<small>Studio console</small></span>
+    </a>
+    <nav class="side-nav" aria-label="Admin sections">
+      <a href="#overview" data-view="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>Overview</a>
+      <a href="#approvals" data-view="approvals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>Approvals<span class="badge" id="badge-approvals"></span></a>
+      <a href="#calendar" data-view="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendar</a>
+      <a href="#listings" data-view="listings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Listings</a>
+      <a href="#accounts" data-view="accounts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Accounts</a>
+    </nav>
+    <div class="side-foot">
+      <div class="side-user"><span class="avatar" id="side-avatar">?</span><div><span id="side-name">Admin</span><small>Studio admin</small></div></div>
+      <button class="btn btn-band btn-sm btn-block" type="button" id="logout">Log out</button>
+    </div>
+  </aside>
 
-  <h2>Room calendar, next 14 days</h2>
-  <div class="calendar-strip" id="calendar-strip"></div>
+  <main class="content">
+    <div class="mobile-top">
+      <a class="auth-brand" href="index.html" style="gap:.5rem"><img src="images/thelittlesomethingstudio-the-little-something-studio-logo-circle-transparent-400w.webp" width="400" height="400" alt="" style="width:32px;height:32px"><span style="font-size:.9rem">Studio console</span></a>
+      <button class="btn btn-band btn-sm" type="button" id="logout-m">Log out</button>
+    </div>
 
-  <h2>Pending approval</h2>
-  <div id="pending"></div>
-  <h2>All listings</h2>
-  <div id="all"></div>
-
-  <h2>Pending facilitators</h2>
-  <div id="pending-users"></div>
-
-  <h2>Facilitators &amp; admin accounts</h2>
-  <div class="card" id="users"></div>
-
-  <script>
-    let listings = [];
-
-    function esc(s) {
-      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    }
-
-    async function init() {
-      const meRes = await fetch('/api/auth/me', { credentials: 'include' });
-      if (!meRes.ok) { window.location.href = '/login.html'; return; }
-      const { user } = await meRes.json();
-      if (user.role !== 'admin') {
-        document.body.innerHTML = '<p style="padding:2rem;">Not authorized.</p>';
-        return;
-      }
-      document.getElementById('greeting').textContent = `Admin: ${user.name}`;
-
-      await loadStats();
-      await loadCalendar();
-      await loadUsers();
-
-      const res = await fetch('/api/admin/listings', { credentials: 'include' });
-      const data = await res.json();
-      listings = data.listings;
-      render();
-    }
-
-    async function loadUsers() {
-      const res = await fetch('/api/admin/users', { credentials: 'include' });
-      const { users } = await res.json();
-
-      const pending = users.filter(u => u.status === 'pending');
-      const approved = users.filter(u => u.status !== 'pending');
-
-      const pendingContainer = document.getElementById('pending-users');
-      pendingContainer.innerHTML = pending.length === 0
-        ? '<div id="empty">No facilitators awaiting approval.</div>'
-        : pending.map(u => `
-          <div class="card">
-            <div class="card-top">
-              <div>
-                ${u.photo_key ? `<img src="/api/photo/${esc(u.photo_key)}" alt="${esc(u.name)}" class="pending-photo">` : ''}
-                <div class="title">${esc(u.name)}</div>
-                <div class="meta">${esc(u.email)}${u.bio ? ` &middot; ${esc(u.bio)}` : ''}</div>
-              </div>
-            </div>
-            <div class="actions">
-              <button class="decline-btn" data-decline-user="${u.id}">Decline</button>
-              <button data-approve-user="${u.id}">Approve</button>
-            </div>
-          </div>
-        `).join('');
-
-      pendingContainer.querySelectorAll('[data-approve-user]').forEach(btn => {
-        btn.addEventListener('click', () => updateUserApproval(btn.dataset.approveUser, 'approve'));
-      });
-      pendingContainer.querySelectorAll('[data-decline-user]').forEach(btn => {
-        btn.addEventListener('click', () => updateUserApproval(btn.dataset.declineUser, 'decline'));
-      });
-
-      const container = document.getElementById('users');
-
-      container.innerHTML = approved.map(u => `
-        <div class="user-row">
-          <div>
-            <span class="user-name">${esc(u.name)}</span>
-            <span class="user-email">&middot; ${esc(u.email)} &middot; ${esc(u.role)}</span>
-            ${u.has_password ? '' : '<div class="no-password">No password set yet</div>'}
-          </div>
-          <button data-reset-link="${u.id}">Generate reset link</button>
+    <section class="view" id="view-overview">
+      <div class="content-head"><div><h1 class="display" id="greeting">Overview</h1><p class="sub" id="sub"></p></div></div>
+      <div class="stats-light">
+        <div class="stat-light"><div class="eyebrow">Confirmed revenue</div><div class="value" id="stat-revenue">&nbsp;</div></div>
+        <div class="stat-light"><div class="eyebrow">Confirmed bookings</div><div class="value" id="stat-bookings">&nbsp;</div></div>
+        <div class="stat-light" id="stat-pending-card"><div class="eyebrow">Awaiting payment</div><div class="value" id="stat-pending-payment">&nbsp;</div></div>
+        <div class="stat-light"><div class="eyebrow">Facilitators</div><div class="value" id="stat-facilitators">&nbsp;</div></div>
+      </div>
+      <div>
+        <div class="section-head"><h2 class="display">Needs attention</h2></div>
+        <div class="grid-2">
+          <a class="tile" href="#approvals" id="tile-listings"><span class="num">0</span><div><b>Classes to approve</b><span>Pending proposals from facilitators</span></div><svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></a>
+          <a class="tile" href="#accounts" id="tile-users"><span class="num">0</span><div><b>Facilitators to approve</b><span>New signups waiting for a decision</span></div><svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></a>
         </div>
-        <div class="reset-link-box" id="reset-link-${u.id}" hidden></div>
-      `).join('');
+      </div>
+      <div>
+        <div class="section-head"><h2 class="display">Next seven days</h2><a class="count" href="#calendar">Full calendar</a></div>
+        <ul class="cal-list" id="week"></ul>
+      </div>
+    </section>
 
-      container.querySelectorAll('[data-reset-link]').forEach(btn => {
-        btn.addEventListener('click', () => generateResetLink(btn.dataset.resetLink));
-      });
-    }
+    <section class="view" id="view-approvals">
+      <div class="content-head"><div><h1 class="display">Approvals</h1><p class="sub">Approving puts a class on the public Classes page. The room is checked for clashes first.</p></div></div>
+      <div>
+        <div class="section-head"><h2 class="display">Classes</h2><span class="count" id="pending-count"></span></div>
+        <div class="rows" id="pending"><div class="skeleton"></div></div>
+      </div>
+      <div>
+        <div class="section-head"><h2 class="display">Facilitator signups</h2><span class="count" id="pending-users-count"></span></div>
+        <div class="rows" id="pending-users"></div>
+      </div>
+    </section>
 
-    async function updateUserApproval(userId, action) {
-      const res = await fetch(`/api/admin/users/${userId}/${action}`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-      if (res.ok) {
-        await loadUsers();
-        await loadStats();
-      }
-    }
+    <section class="view" id="view-calendar">
+      <div class="content-head"><div><h1 class="display">Room calendar</h1><p class="sub">Tap a day to see everything booked in the studio, and approve what fits.</p></div></div>
+      <div class="months" id="months"></div>
+      <div class="cat-legend" id="cat-legend"></div>
+    </section>
 
-    async function generateResetLink(userId) {
-      const res = await fetch('/api/admin/reset-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ user_id: Number(userId) })
-      });
-      const data = await res.json();
-      const box = document.getElementById(`reset-link-${userId}`);
+    <section class="view" id="view-listings">
+      <div class="content-head"><div><h1 class="display">All listings</h1><p class="sub" id="listings-sub"></p></div></div>
+      <div class="chips" id="filters" role="group" aria-label="Filter by status">
+        <button class="chip" type="button" data-filter="all" aria-pressed="true">All <span class="n"></span></button>
+        <button class="chip" type="button" data-filter="approved" aria-pressed="false">Approved <span class="n"></span></button>
+        <button class="chip" type="button" data-filter="pending" aria-pressed="false">Pending <span class="n"></span></button>
+        <button class="chip" type="button" data-filter="declined" aria-pressed="false">Declined <span class="n"></span></button>
+      </div>
+      <div class="rows" id="all"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </section>
 
-      if (!res.ok) {
-        box.textContent = data.error || 'Could not generate a link.';
-        box.hidden = false;
-        return;
-      }
+    <section class="view" id="view-accounts">
+      <div class="content-head"><div><h1 class="display">Accounts</h1><p class="sub">Facilitators and admins. Generate a reset link when someone needs a password.</p></div></div>
+      <div>
+        <div class="section-head"><h2 class="display">Waiting for approval</h2><span class="count" id="pending-users-count-2"></span></div>
+        <div class="rows" id="pending-users-2"></div>
+      </div>
+      <div>
+        <div class="section-head"><h2 class="display">Everyone</h2></div>
+        <div class="card card-pad" id="users"></div>
+      </div>
+    </section>
+  </main>
+</div>
 
-      box.innerHTML = `Send this to them (valid 24 hours):<br>${esc(data.reset_url)}`;
-      box.hidden = false;
-    }
+<dialog class="day" id="day-modal" aria-labelledby="day-title">
+  <div class="day-card">
+    <div class="day-top">
+      <div><span class="eyebrow">In the studio</span><h2 class="display" id="day-title"></h2><p id="day-sub"></p></div>
+      <button class="day-close" type="button" id="day-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="day-body" id="day-body"></div>
+  </div>
+</dialog>
 
-    async function loadStats() {
-      const res = await fetch('/api/admin/stats', { credentials: 'include' });
-      const stats = await res.json();
-      document.getElementById('stat-revenue').textContent = `${stats.total_revenue} THB`;
-      document.getElementById('stat-bookings').textContent = stats.total_bookings;
-      document.getElementById('stat-pending-payment').textContent = stats.pending_payment_bookings;
-      document.getElementById('stat-facilitators').textContent = stats.active_facilitators;
-    }
+<div class="toast" role="status" aria-live="polite"></div>
+<div class="bye" aria-hidden="true"><div class="display">See you at the studio.</div><p>Signing you out</p></div>
 
-    async function loadCalendar() {
-      const res = await fetch('/api/admin/calendar', { credentials: 'include' });
-      const { calendar } = await res.json();
-      const strip = document.getElementById('calendar-strip');
-      strip.innerHTML = '';
+<script src="js/app.js"></script>
+<script>
+(function () {
+  var esc = App.esc;
+  var TAG = { approved: 'tag-ok', pending: 'tag-warn', declined: 'tag-bad' };
+  var LABEL = { approved: 'Approved', pending: 'Pending', declined: 'Declined' };
+  var listings = [], users = [], calendar = {}, filter = 'all', selectedDay = null;
 
-      const today = new Date();
-      for (let i = 0; i < 14; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() + i);
-        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
-        const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const hasClasses = calendar[iso] && calendar[iso].length > 0;
-
-        const chip = document.createElement('div');
-        chip.className = 'day-chip' + (hasClasses ? ' has-classes' : '');
-        chip.innerHTML = `${dayLabel}<div class="date-label">${dateLabel}</div>`;
-        if (hasClasses) chip.title = calendar[iso].map(c => c.title_en).join(', ');
-        strip.appendChild(chip);
-      }
-    }
-
-    function render() {
-      const pending = listings.filter(l => l.status === 'pending');
-      const pendingEl = document.getElementById('pending');
-      const allEl = document.getElementById('all');
-
-      pendingEl.innerHTML = pending.length === 0
-        ? '<div id="empty">Nothing waiting on approval.</div>'
-        : pending.map(cardHtml).join('');
-      allEl.innerHTML = listings.map(cardHtml).join('');
-
-      document.querySelectorAll('[data-approve]').forEach(btn => {
-        btn.addEventListener('click', () => updateStatus(btn.dataset.approve, 'approved'));
-      });
-      document.querySelectorAll('[data-decline]').forEach(btn => {
-        btn.addEventListener('click', () => updateStatus(btn.dataset.decline, 'declined'));
-      });
-      document.querySelectorAll('.view-attendees-btn').forEach(btn => {
-        btn.addEventListener('click', () => toggleRoster(btn.dataset.id));
-      });
-    }
-
-    function cardHtml(l) {
-      const hasConflict = l.status === 'pending' && l.conflicts && l.conflicts.length > 0;
-      const conflictWarning = hasConflict ? `
-        <div class="conflict-warning">
-          Clashes with ${l.conflicts.map(c => `<strong>${esc(c.title_en)}</strong> (${esc(c.facilitator_name)}, ${esc(c.start_time)} to ${esc(c.end_time)})`).join(', ')}
-        </div>` : '';
-      const actionButtons = l.status === 'pending' ? `
-        <div class="actions">
-          <button class="decline-btn" data-decline="${l.id}">Decline</button>
-          <button data-approve="${l.id}">${hasConflict ? 'Approve anyway' : 'Approve'}</button>
-        </div>` : '';
-      return `
-        <div class="card">
-          <div class="card-top">
-            <div>
-              ${l.photo_key ? `<img src="/api/photo/${esc(l.photo_key)}" alt="${esc(l.title_en)}" class="listing-photo">` : ''}
-              <div class="title">${esc(l.title_en)}</div>
-              <div class="meta">${esc(l.facilitator_name)} &middot; ${esc(l.start_time)} to ${esc(l.end_time)}</div>
-            </div>
-            <span class="status ${esc(l.status)}">${esc(l.status)}</span>
-          </div>
-          ${conflictWarning}
-          <div class="actions">
-            <button class="view-attendees-btn" data-id="${l.id}">View attendees</button>
-          </div>
-          <div class="roster" id="roster-${l.id}" style="display:none;"></div>
-          ${actionButtons}
-        </div>`;
-    }
-
-    async function toggleRoster(listingId) {
-      const rosterEl = document.getElementById(`roster-${listingId}`);
-      if (rosterEl.style.display === 'block') {
-        rosterEl.style.display = 'none';
-        return;
-      }
-      const res = await fetch(`/api/my-listings/${listingId}/attendees`, { credentials: 'include' });
-      if (!res.ok) {
-        rosterEl.innerHTML = '<div class="roster-empty">Could not load attendees.</div>';
-        rosterEl.style.display = 'block';
-        return;
-      }
-      const { attendees, listing, spots_filled } = await res.json();
-      rosterEl.innerHTML = attendees.length === 0
-        ? '<div class="roster-empty">No bookings yet.</div>'
-        : `<div class="roster-count">${spots_filled}${listing.capacity ? ' / ' + listing.capacity : ''} booked</div>` +
-          attendees.map(a => `
-            <div class="roster-row">
-              <span>${esc(a.attendee_name)}${a.attendee_phone ? ' &middot; ' + esc(a.attendee_phone) : ''}</span>
-              <span class="pay-status ${esc(a.payment_status)}">${esc(a.payment_status)}</span>
-            </div>
-          `).join('');
-      rosterEl.style.display = 'block';
-    }
-
-    async function updateStatus(id, status, confirmConflict = false) {
-      const res = await fetch(`/api/admin/listings/${id}/status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ status, confirm_conflict: confirmConflict })
-      });
-
-      if (res.status === 409) {
-        const data = await res.json();
-        const names = data.conflicts.map(c => `${c.title_en} (${c.facilitator_name})`).join(', ');
-        const proceed = confirm(`This clashes with: ${names}. Approve anyway?`);
-        if (proceed) {
-          await updateStatus(id, status, true);
-        }
-        return;
-      }
-
-      const listing = listings.find(l => l.id == id);
-      if (listing) listing.status = status;
-      render();
-      loadCalendar();
-    }
-
-    document.getElementById('logout').addEventListener('click', async () => {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-      window.location.href = '/login.html';
+  /* Views */
+  var VIEWS = ['overview', 'approvals', 'calendar', 'listings', 'accounts'];
+  function showView(name) {
+    if (VIEWS.indexOf(name) === -1) name = 'overview';
+    VIEWS.forEach(function (v) { document.getElementById('view-' + v).classList.toggle('on', v === name); });
+    document.querySelectorAll('.side-nav a').forEach(function (a) {
+      if (a.dataset.view === name) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
+    window.scrollTo({ top: 0 });
+  }
+  window.addEventListener('hashchange', function () { showView(location.hash.slice(1)); });
 
-    init();
-  </script>
+  /* Helpers */
+  function localKey(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function timeOf(s) { return s.slice(11, 16); }
+  function thumb(l) {
+    return l.photo_key
+      ? '<img class="thumb" src="/api/photo/' + esc(l.photo_key) + '" alt="" width="52" height="52" loading="lazy">'
+      : '<span class="thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>';
+  }
+  function conflictHtml(l) {
+    if (!l.conflicts || !l.conflicts.length) return '';
+    return '<div class="conflict"><div class="head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Room clash</div><ul>'
+      + l.conflicts.map(function (c) {
+        return '<li><b>' + esc(c.title_en) + '</b> with ' + esc(c.facilitator_name) + ', ' + esc(App.fmtWhen(c.start_time, c.end_time)) + '</li>';
+      }).join('') + '</ul></div>';
+  }
+
+  function rowHtml(l, withActions) {
+    var past = App.isPast(l);
+    var clash = l.status === 'pending' && l.conflicts && l.conflicts.length;
+    return '<article class="row' + (past ? ' past' : '') + '" data-status="' + esc(l.status) + '" data-id="' + l.id + '">'
+      + thumb(l)
+      + '<div class="row-body"><div class="row-title">' + esc(l.title_en) + '</div>'
+      + '<div class="row-when">' + esc(l.facilitator_name) + ' &middot; ' + esc(App.fmtWhen(l.start_time, l.end_time)) + '</div>'
+      + '<div class="row-tags"><span class="tag ' + (TAG[l.status] || '') + '">' + esc(LABEL[l.status] || l.status) + '</span>'
+      + (l.category ? '<span class="tag tag-cat" data-cat="' + esc(catKey(l.category)) + '">' + esc(CAT[catKey(l.category)]) + '</span>' : '')
+      + (past ? '<span class="tag">Past</span>' : '')
+      + (l.capacity ? '<span class="tag">' + esc(l.capacity) + ' places</span>' : '') + '</div>'
+      + (withActions ? conflictHtml(l) : '') + '</div>'
+      + '<div class="row-side">' + (l.price != null ? '<span class="row-price">฿' + esc(l.price) + '</span>' : '')
+      + '<button class="btn btn-ghost btn-sm roster-btn" type="button" aria-expanded="false" data-id="' + l.id + '">Attendees <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button></div>'
+      + '<div class="panel" id="panel-' + (withActions ? 'p' : 'a') + l.id + '"><div><div class="panel-inner" id="roster-' + (withActions ? 'p' : 'a') + l.id + '"></div></div></div>'
+      + (withActions ? '<div class="actions"><button class="btn btn-danger btn-sm" type="button" data-decline="' + l.id + '">Decline</button><span class="spacer"></span>'
+        + (clash ? '<button class="btn btn-ghost btn-sm" type="button" data-approve="' + l.id + '" data-force="1">Approve anyway</button>'
+                 : '<button class="btn btn-fill btn-sm" type="button" data-approve="' + l.id + '"><span class="label">Approve</span><span class="spinner" aria-hidden="true"></span></button>') + '</div>' : '')
+      + '</article>';
+  }
+
+  function bindRosters(root, prefix) {
+    root.querySelectorAll('.roster-btn').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        var id = btn.dataset.id;
+        var panel = document.getElementById('panel-' + prefix + id);
+        var on = App.togglePanel(panel, btn);
+        if (on && !panel.dataset.loaded) {
+          await App.loadRoster(id, document.getElementById('roster-' + prefix + id));
+          panel.dataset.loaded = '1';
+        }
+      });
+    });
+  }
+
+  /* Approvals */
+  function renderPending() {
+    var pending = listings.filter(function (l) { return l.status === 'pending'; });
+    var root = document.getElementById('pending');
+    document.getElementById('pending-count').textContent = pending.length ? pending.length + ' waiting' : '';
+    document.getElementById('badge-approvals').textContent = pending.length ? pending.length : '';
+    var tile = document.getElementById('tile-listings');
+    tile.querySelector('.num').textContent = pending.length;
+    tile.classList.toggle('calm', !pending.length);
+    root.innerHTML = pending.length ? pending.map(function (l) { return rowHtml(l, true); }).join('')
+      : '<div class="card empty"><b>All clear</b>Nothing is waiting for approval.</div>';
+    bindRosters(root, 'p');
+    root.querySelectorAll('[data-approve]').forEach(function (b) { b.addEventListener('click', function () { setStatus(b.dataset.approve, 'approved', !!b.dataset.force, b); }); });
+    root.querySelectorAll('[data-decline]').forEach(function (b) { b.addEventListener('click', function () { setStatus(b.dataset.decline, 'declined', false, b); }); });
+  }
+
+  async function setStatus(id, status, force, btn) {
+    var row = btn.closest('.row, .slot');
+    App.busy(btn, true);
+    var res = await fetch('/api/admin/listings/' + id + '/status', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+      body: JSON.stringify({ status: status, confirm_conflict: force })
+    });
+    App.busy(btn, false);
+    if (res.status === 409) {
+      var data = await res.json();
+      var old = row.querySelector('.confirm-inline');
+      if (old) old.remove();
+      var box = document.createElement('div');
+      box.className = 'confirm-inline';
+      box.innerHTML = '<span>This clashes with ' + data.conflicts.map(function (c) { return '<b>' + esc(c.title_en) + '</b>'; }).join(', ') + '. Approve anyway?</span><span class="spacer"></span>'
+        + '<button class="btn btn-ghost btn-sm" type="button" data-cancel>Keep pending</button><button class="btn btn-fill btn-sm" type="button" data-force-approve>Approve anyway</button>';
+      row.appendChild(box);
+      box.querySelector('[data-cancel]').addEventListener('click', function () { box.remove(); });
+      box.querySelector('[data-force-approve]').addEventListener('click', function () { setStatus(id, 'approved', true, box.querySelector('[data-force-approve]')); });
+      return;
+    }
+    if (!res.ok) { App.toast('Could not update that listing.'); return; }
+    var l = listings.find(function (x) { return x.id == id; });
+    if (l) l.status = status;
+    row.classList.add(status === 'approved' ? 'flash-ok' : 'flash-bad');
+    var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(function () {
+      row.classList.add('leaving');
+      setTimeout(function () {
+        App.toast((status === 'approved' ? 'Approved: ' : 'Declined: ') + (l ? l.title_en : 'listing'));
+        recomputeConflicts();
+        renderPending(); renderAll(); renderWeek(); loadCalendar();
+      }, reduced ? 0 : 260);
+    }, reduced ? 0 : 350);
+  }
+
+  function recomputeConflicts() {
+    var approved = listings.filter(function (l) { return l.status === 'approved'; });
+    listings.forEach(function (l) {
+      l.conflicts = approved.filter(function (o) { return o.id !== l.id && l.start_time < o.end_time && l.end_time > o.start_time; })
+        .map(function (c) { return { id: c.id, title_en: c.title_en, facilitator_name: c.facilitator_name, start_time: c.start_time, end_time: c.end_time }; });
+    });
+  }
+
+  /* Listings */
+  function renderAll() {
+    var counts = { all: listings.length, approved: 0, pending: 0, declined: 0 };
+    listings.forEach(function (l) { counts[l.status] = (counts[l.status] || 0) + 1; });
+    document.querySelectorAll('#filters .chip').forEach(function (c) {
+      c.querySelector('.n').textContent = counts[c.dataset.filter] || 0;
+      c.setAttribute('aria-pressed', String(c.dataset.filter === filter));
+    });
+    var shown = listings.filter(function (l) { return filter === 'all' || l.status === filter; });
+    document.getElementById('listings-sub').textContent = listings.length + ' listings across ' + new Set(listings.map(function (l) { return l.facilitator_id; })).size + ' facilitators.';
+    var root = document.getElementById('all');
+    root.innerHTML = shown.length ? shown.map(function (l) { return rowHtml(l, false); }).join('')
+      : '<div class="card empty"><b>Nothing here</b>No ' + esc(filter) + ' listings.</div>';
+    bindRosters(root, 'a');
+  }
+  document.querySelectorAll('#filters .chip').forEach(function (c) {
+    c.addEventListener('click', function () { filter = c.dataset.filter; renderAll(); });
+  });
+
+  /* Calendar: built from the listings list (it carries category, status and conflicts) */
+  var CAT = { yoga: 'Yoga', dance: 'Dance', capoeira: 'Capoeira', watercolour: 'Watercolour', 'movement-lab': 'Movement lab', 'sound-healing': 'Sound healing', other: 'Other' };
+  function catKey(c) { return CAT[c] ? c : 'other'; }
+  function buildCalendar() {
+    calendar = {};
+    listings.filter(function (l) { return l.status !== 'declined'; })
+      .sort(function (a, b) { return a.start_time < b.start_time ? -1 : 1; })
+      .forEach(function (l) { var k = l.start_time.slice(0, 10); (calendar[k] = calendar[k] || []).push(l); });
+  }
+  function monthHtml(year, month) {
+    var first = new Date(year, month, 1);
+    var days = new Date(year, month + 1, 0).getDate();
+    var lead = (first.getDay() + 6) % 7; // Monday first
+    var todayKey = localKey(new Date());
+    var cells = '';
+    for (var i = 0; i < lead; i++) cells += '<span class="mday blank"></span>';
+    for (var d = 1; d <= days; d++) {
+      var date = new Date(year, month, d), key = localKey(date), items = calendar[key] || [];
+      var past = key < todayKey;
+      cells += '<button class="mday' + (items.length ? ' has' : '') + (key === todayKey ? ' today' : '') + (past ? ' past' : '') + '" type="button" data-day="' + key + '"'
+        + ' aria-pressed="' + String(key === selectedDay) + '" aria-label="' + date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) + ', ' + items.length + ' in the studio">'
+        + d + '<span class="dots">' + items.slice(0, 4).map(function (c) { return '<i data-cat="' + esc(catKey(c.category)) + '" class="' + (c.status === 'pending' ? 'pending' : '') + '"></i>'; }).join('') + '</span></button>';
+    }
+    var count = Object.keys(calendar).filter(function (k) { return k.slice(0, 7) === year + '-' + String(month + 1).padStart(2, '0'); })
+      .reduce(function (n, k) { return n + calendar[k].length; }, 0);
+    return '<div class="month"><div class="month-head"><h3 class="display">' + first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) + '</h3><span>' + (count ? count + ' in the studio' : 'nothing booked') + '</span></div>'
+      + '<div class="month-grid">' + ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(function (d) { return '<span class="dow">' + d + '</span>'; }).join('') + cells + '</div></div>';
+  }
+  function renderCalendar() {
+    var now = new Date();
+    var root = document.getElementById('months');
+    root.innerHTML = monthHtml(now.getFullYear(), now.getMonth()) + monthHtml(now.getFullYear(), now.getMonth() + 1);
+    root.querySelectorAll('.mday:not(.blank)').forEach(function (cell) {
+      cell.addEventListener('click', function () { openDay(cell.dataset.day); });
+    });
+    document.getElementById('cat-legend').innerHTML = Object.keys(CAT).map(function (k) {
+      return '<span data-cat="' + k + '"><i></i>' + CAT[k] + '</span>';
+    }).join('') + '<span><i class="pending" data-cat="other" style="background:var(--ink-soft)"></i>Lighter dot: pending</span>';
+  }
+
+  /* Day modal */
+  var modal = document.getElementById('day-modal');
+  function slotHtml(l) {
+    var pending = l.status === 'pending';
+    var clash = pending && l.conflicts && l.conflicts.length;
+    return '<div class="slot' + (pending ? ' pending' : '') + '" data-cat="' + esc(catKey(l.category)) + '" data-id="' + l.id + '">'
+      + '<span class="time">' + esc(timeOf(l.start_time)) + ' to ' + esc(timeOf(l.end_time)) + '</span>'
+      + '<div><div class="t">' + esc(l.title_en) + '</div><div class="f">' + esc(l.facilitator_name) + (l.capacity ? ' &middot; ' + esc(l.capacity) + ' places' : '') + (l.price != null ? ' &middot; ฿' + esc(l.price) : '') + '</div>'
+      + '<div class="tags"><span class="tag tag-cat">' + esc(CAT[catKey(l.category)]) + '</span><span class="tag ' + (TAG[l.status] || '') + '">' + esc(pending ? 'Pending approval' : LABEL[l.status]) + '</span></div></div>'
+      + (pending ? '<div class="slot-actions">'
+          + (clash ? '<span class="clash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Clashes with ' + esc(l.conflicts[0].title_en) + '</span>' : '<span class="f">Room is free for this slot</span>')
+          + '<span class="spacer"></span><button class="btn btn-danger btn-sm" type="button" data-decline="' + l.id + '">Decline</button>'
+          + (clash ? '<button class="btn btn-ghost btn-sm" type="button" data-approve="' + l.id + '" data-force="1">Approve anyway</button>'
+                   : '<button class="btn btn-fill btn-sm" type="button" data-approve="' + l.id + '"><span class="label">Approve</span><span class="spinner" aria-hidden="true"></span></button>')
+          + '</div>' : '')
+      + '</div>';
+  }
+  function renderDay() {
+    if (!selectedDay) return;
+    var d = new Date(selectedDay + 'T00:00');
+    var items = calendar[selectedDay] || [];
+    var pending = items.filter(function (l) { return l.status === 'pending'; }).length;
+    document.getElementById('day-title').textContent = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    document.getElementById('day-sub').textContent = items.length
+      ? items.length + (items.length === 1 ? ' activity' : ' activities') + (pending ? ', ' + pending + ' waiting for approval' : ', all approved')
+      : 'The room is free all day.';
+    var body = document.getElementById('day-body');
+    body.innerHTML = items.length ? items.map(slotHtml).join('') : '<div class="day-empty"><b>Nothing booked</b>No classes or rentals on this day.</div>';
+    body.querySelectorAll('[data-approve]').forEach(function (b) { b.addEventListener('click', function () { setStatus(b.dataset.approve, 'approved', !!b.dataset.force, b); }); });
+    body.querySelectorAll('[data-decline]').forEach(function (b) { b.addEventListener('click', function () { setStatus(b.dataset.decline, 'declined', false, b); }); });
+  }
+  function openDay(key) {
+    selectedDay = key;
+    renderDay();
+    if (!modal.open) modal.showModal();
+    renderCalendar();
+  }
+  document.getElementById('day-close').addEventListener('click', function () { modal.close(); });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+  modal.addEventListener('close', function () { selectedDay = null; renderCalendar(); });
+
+  function renderWeek() {
+    var items = [], today = new Date();
+    for (var i = 0; i < 7; i++) { var d = new Date(today); d.setDate(today.getDate() + i); (calendar[localKey(d)] || []).forEach(function (c) { items.push(c); }); }
+    var el = document.getElementById('week');
+    if (!items.length) { el.innerHTML = '<li style="display:block;color:var(--ink-faint);font-size:.9rem">Nothing booked in the next seven days.</li>'; return; }
+    el.innerHTML = items.map(function (c) {
+      var d = new Date(c.start_time.replace(' ', 'T'));
+      return '<li data-cat="' + esc(catKey(c.category)) + '" style="border-left:4px solid var(--c)"><span class="time">' + d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }) + ' &middot; ' + esc(timeOf(c.start_time)) + '</span><span><span class="t">' + esc(c.title_en) + '</span><br><span class="f">' + esc(c.facilitator_name) + '</span></span><span class="tag ' + (c.status === 'pending' ? 'tag-warn' : 'tag-cat') + '">' + esc(c.status === 'pending' ? 'Pending' : CAT[catKey(c.category)]) + '</span></li>';
+    }).join('');
+  }
+  function loadCalendar() { buildCalendar(); renderCalendar(); renderWeek(); if (modal.open) renderDay(); }
+
+  /* Accounts */
+  function userCard(u) {
+    return '<article class="row" data-status="pending" data-id="u' + u.id + '">'
+      + (u.photo_key ? '<img class="thumb" src="/api/photo/' + esc(u.photo_key) + '" alt="" width="52" height="52" style="border-radius:50%">' : '<span class="thumb avatar" style="border-radius:50%">' + esc(App.initials(u.name)) + '</span>')
+      + '<div class="row-body"><div class="row-title">' + esc(u.name) + '</div><div class="row-when">' + esc(u.email) + '</div>'
+      + (u.bio ? '<p style="font-size:.85rem;color:var(--ink-soft);margin-top:.4rem">' + esc(u.bio) + '</p>' : '') + '</div>'
+      + '<div class="row-side"><span class="tag tag-warn">New signup</span></div>'
+      + '<div class="actions"><button class="btn btn-danger btn-sm" type="button" data-decline-user="' + u.id + '">Decline and delete</button><span class="spacer"></span><button class="btn btn-fill btn-sm" type="button" data-approve-user="' + u.id + '"><span class="label">Approve</span><span class="spinner" aria-hidden="true"></span></button></div>'
+      + '</article>';
+  }
+  function renderUsers() {
+    var pending = users.filter(function (u) { return u.status === 'pending'; });
+    var approved = users.filter(function (u) { return u.status !== 'pending'; });
+    var tile = document.getElementById('tile-users');
+    tile.querySelector('.num').textContent = pending.length;
+    tile.classList.toggle('calm', !pending.length);
+    var badge = Number(document.getElementById('badge-approvals').textContent || 0);
+    var pendingListings = listings.filter(function (l) { return l.status === 'pending'; }).length;
+    document.getElementById('badge-approvals').textContent = (pendingListings + pending.length) || '';
+    ['', '-2'].forEach(function (sfx) {
+      document.getElementById('pending-users-count' + sfx).textContent = pending.length ? pending.length + ' waiting' : '';
+      var root = document.getElementById('pending-users' + sfx);
+      root.innerHTML = pending.length ? pending.map(userCard).join('') : '<div class="card empty" style="padding:1.2rem">No new signups.</div>';
+      root.querySelectorAll('[data-approve-user]').forEach(function (b) { b.addEventListener('click', function () { userAction(b.dataset.approveUser, 'approve', b); }); });
+      root.querySelectorAll('[data-decline-user]').forEach(function (b) { b.addEventListener('click', function () { userAction(b.dataset.declineUser, 'decline', b); }); });
+    });
+    var c = document.getElementById('users');
+    c.innerHTML = approved.map(function (u) {
+      return '<div class="user-row" id="user-' + u.id + '">'
+        + (u.photo_key ? '<img class="photo" src="/api/photo/' + esc(u.photo_key) + '" alt="" width="40" height="40">' : '<span class="avatar" style="width:40px;height:40px;font-size:.85rem">' + esc(App.initials(u.name)) + '</span>')
+        + '<div><div class="name">' + esc(u.name) + '</div><div class="email">' + esc(u.email) + '</div>'
+        + '<div class="meta"><span class="tag' + (u.role === 'admin' ? ' tag-ok' : '') + '">' + esc(u.role) + '</span>' + (u.has_password ? '' : '<span class="tag tag-warn">No password yet</span>') + '</div></div>'
+        + '<button class="btn btn-ghost btn-sm" type="button" data-reset="' + u.id + '"><span class="label">Reset link</span><span class="spinner" aria-hidden="true"></span></button>'
+        + '</div>';
+    }).join('');
+    c.querySelectorAll('[data-reset]').forEach(function (b) { b.addEventListener('click', function () { resetLink(b.dataset.reset, b); }); });
+  }
+  async function userAction(id, action, btn) {
+    var row = btn.closest('.row');
+    App.busy(btn, true);
+    var res = await fetch('/api/admin/users/' + id + '/' + action, { method: 'POST', credentials: 'include' });
+    App.busy(btn, false);
+    if (!res.ok) { App.toast('Could not update that account.'); return; }
+    row.classList.add(action === 'approve' ? 'flash-ok' : 'flash-bad');
+    setTimeout(function () { row.classList.add('leaving'); }, 350);
+    setTimeout(async function () {
+      App.toast(action === 'approve' ? 'Facilitator approved. They can log in now.' : 'Signup declined and removed.');
+      await loadUsers(); await loadStats();
+    }, 650);
+  }
+  async function resetLink(id, btn) {
+    App.busy(btn, true);
+    var res = await fetch('/api/admin/reset-link', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ user_id: Number(id) }) });
+    var data = await res.json();
+    App.busy(btn, false);
+    var row = document.getElementById('user-' + id);
+    var old = row.querySelector('.reset-box'); if (old) old.remove();
+    var box = document.createElement('div');
+    box.className = 'reset-box';
+    if (!res.ok) { box.textContent = data.error || 'Could not generate a link.'; row.appendChild(box); return; }
+    box.innerHTML = '<span>Valid 24 hours, works once:</span><code></code><button class="btn btn-ghost btn-sm" type="button">Copy</button>';
+    box.querySelector('code').textContent = data.reset_url;
+    box.querySelector('button').addEventListener('click', async function () {
+      try { await navigator.clipboard.writeText(data.reset_url); App.toast('Link copied'); } catch (e) { App.toast('Select and copy the link'); }
+    });
+    row.appendChild(box);
+  }
+  async function loadUsers() {
+    var res = await fetch('/api/admin/users', { credentials: 'include' });
+    users = res.ok ? (await res.json()).users : [];
+    renderUsers();
+  }
+
+  /* Stats */
+  async function loadStats() {
+    var res = await fetch('/api/admin/stats', { credentials: 'include' });
+    if (!res.ok) return;
+    var s = await res.json();
+    document.getElementById('stat-revenue').innerHTML = '฿' + esc(Number(s.total_revenue).toLocaleString('en-US'));
+    document.getElementById('stat-bookings').textContent = s.total_bookings;
+    document.getElementById('stat-pending-payment').textContent = s.pending_payment_bookings;
+    document.getElementById('stat-pending-card').classList.toggle('hot', s.pending_payment_bookings > 0);
+    document.getElementById('stat-facilitators').textContent = s.active_facilitators;
+  }
+
+  async function loadListings() {
+    var res = await fetch('/api/admin/listings', { credentials: 'include' });
+    listings = res.ok ? (await res.json()).listings : [];
+    renderPending(); renderAll();
+    var pending = listings.filter(function (l) { return l.status === 'pending'; }).length;
+    document.getElementById('sub').textContent = pending
+      ? pending + (pending === 1 ? ' class is' : ' classes are') + ' waiting for your decision.'
+      : 'Nothing is waiting on you right now.';
+  }
+
+  document.getElementById('logout').addEventListener('click', App.logout);
+  document.getElementById('logout-m').addEventListener('click', App.logout);
+
+  (async function init() {
+    var user = await App.me();
+    if (!user) { location.href = '/login.html'; return; }
+    if (user.role !== 'admin') { location.href = '/dashboard.html'; return; }
+    document.getElementById('side-name').textContent = user.name;
+    document.getElementById('side-avatar').textContent = App.initials(user.name);
+    var h = new Date().getHours();
+    document.getElementById('greeting').textContent = (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + ', ' + user.name + '.';
+    showView(location.hash.slice(1) || 'overview');
+    await Promise.all([loadStats(), loadListings(), loadUsers()]);
+    loadCalendar();
+  })();
+})();
+</script>
 </body>
 </html>

@@ -1,323 +1,354 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard: The Little Something Studio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --terracotta: #C1653D;
-      --forest: #3A4A3F;
-      --cream: #F7F3EC;
-      --charcoal: #2B2B28;
-      --sage: #8FA38E;
-    }
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--cream);
-      color: var(--charcoal);
-      margin: 0;
-      padding: 2rem 1.5rem;
-      max-width: 720px;
-      margin-inline: auto;
-    }
-    h1, h2 { font-family: 'Fraunces', serif; font-weight: 500; margin: 0; }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-    h1 { font-size: 1.6rem; color: var(--forest); }
-    h2 { font-size: 1.1rem; margin: 2rem 0 1rem; color: var(--forest); }
-    button {
-      padding: 9px 16px;
-      background: var(--terracotta);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-family: 'Inter', sans-serif;
-      transition: opacity 0.15s;
-    }
-    button:hover { opacity: 0.9; }
-    #logout { background: transparent; color: var(--charcoal); border: 1px solid #d8d2c4; }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 1rem;
-    }
-    .stat-card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 1.1rem 1.25rem;
-      box-shadow: 0 1px 8px rgba(58,74,63,0.06);
-    }
-    .stat-label { font-size: 0.78rem; color: #7a7568; margin-bottom: 4px; }
-    .stat-value { font-size: 1.5rem; font-family: 'Fraunces', serif; color: var(--forest); }
-
-    .form-card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 1px 10px rgba(58,74,63,0.07);
-    }
-    .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-    .form-row > div { flex: 1; min-width: 140px; }
-    label { display: block; font-size: 0.78rem; color: #7a7568; margin-bottom: 5px; }
-    input, select {
-      width: 100%;
-      padding: 9px 10px;
-      border: 1px solid #e3ddd0;
-      border-radius: 8px;
-      font-size: 0.92rem;
-      font-family: 'Inter', sans-serif;
-      background: var(--cream);
-    }
-    #new-listing-msg { font-size: 0.85rem; margin-top: 10px; display: none; }
-    #new-listing-msg.success { color: #2f6b2f; }
-    #new-listing-msg.error { color: #a13a3a; }
-
-    .card {
-      background: #fff;
-      border: 1px solid #eee4d3;
-      border-radius: 14px;
-      padding: 1.1rem 1.3rem;
-      margin-bottom: 10px;
-      box-shadow: 0 1px 8px rgba(58,74,63,0.05);
-    }
-    .listing-photo { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; margin-bottom: 8px; display: block; }
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
-    .title { font-weight: 600; font-size: 1rem; }
-    .meta { font-size: 0.85rem; color: #7a7568; margin-top: 3px; }
-    .status {
-      font-size: 0.72rem;
-      padding: 4px 11px;
-      border-radius: 20px;
-      flex-shrink: 0;
-      font-weight: 500;
-      text-transform: capitalize;
-    }
-    .status.approved { background: #e3f0e3; color: #2f6b2f; }
-    .status.pending { background: #fbeecb; color: #93650c; }
-    .status.declined { background: #f5dede; color: #a13a3a; }
-    #empty { color: #9a9384; font-size: 0.9rem; text-align: center; padding: 2.5rem 0; }
-    .actions { margin-top: 10px; border-top: 1px solid #f0ead9; padding-top: 10px; }
-    .actions button {
-      background: transparent; color: var(--forest); border: 1px solid #d8d2c4;
-      font-size: 0.82rem; padding: 6px 12px;
-    }
-    .roster { margin-top: 10px; border-top: 1px solid #f0ead9; padding-top: 10px; }
-    .roster-count { font-size: 0.78rem; color: #7a7568; margin-bottom: 8px; }
-    .roster-row {
-      display: flex; justify-content: space-between; font-size: 0.85rem;
-      padding: 6px 0; border-bottom: 1px solid #f5f0e5;
-    }
-    .roster-empty { font-size: 0.85rem; color: #9a9384; }
-    .pay-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; text-transform: capitalize; }
-    .pay-status.confirmed { background: #e3f0e3; color: #2f6b2f; }
-    .pay-status.pending { background: #fbeecb; color: #93650c; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dashboard | The Little Something Studio</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#3A4A3F">
+<link rel="icon" href="images/thelittlesomethingstudio-the-little-something-studio-logo-circle-transparent-400w.webp" type="image/webp">
+<link rel="preload" href="fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem('tlss-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-  <div class="header">
-    <h1 id="greeting">Dashboard</h1>
-    <button id="logout">Log out</button>
-  </div>
 
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Total listings</div>
-      <div class="stat-value" id="stat-total">...</div>
+<header class="band">
+  <div class="wrap">
+    <div class="topbar">
+      <a class="auth-brand" href="index.html">
+        <img src="images/thelittlesomethingstudio-the-little-something-studio-logo-circle-transparent-400w.webp" width="400" height="400" alt="">
+        <span>The Little Something<small>Studio console</small></span>
+      </a>
+      <button class="btn btn-band btn-sm" type="button" id="logout">Log out</button>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Approved</div>
-      <div class="stat-value" id="stat-approved">...</div>
+    <h1 class="display" id="greeting">Loading your dashboard</h1>
+    <p class="sub" id="sub"></p>
+    <div class="stats" id="stats">
+      <div class="stat"><div class="eyebrow">Upcoming</div><div class="value" id="stat-upcoming">&nbsp;</div></div>
+      <div class="stat"><div class="eyebrow">Awaiting approval</div><div class="value" id="stat-pending">&nbsp;</div></div>
+      <div class="stat"><div class="eyebrow">Past classes</div><div class="value" id="stat-past">&nbsp;</div></div>
     </div>
   </div>
+</header>
 
-  <h2>New listing</h2>
-  <div class="form-card">
-    <form id="new-listing-form">
-      <div class="form-row">
-        <div>
-          <label for="title">Class title</label>
-          <input type="text" id="title" required>
-        </div>
-        <div>
-          <label for="category">Category</label>
-          <select id="category">
-            <option value="yoga">Yoga</option>
-            <option value="dance">Dance</option>
-            <option value="capoeira">Capoeira</option>
-            <option value="watercolour">Watercolour</option>
-            <option value="movement-lab">Movement lab</option>
-            <option value="sound-healing">Sound healing</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div>
-          <label for="start">Start time</label>
-          <input type="datetime-local" id="start" required>
-        </div>
-        <div>
-          <label for="end">End time</label>
-          <input type="datetime-local" id="end" required>
-        </div>
-      </div>
-      <div class="form-row">
-        <div>
-          <label for="price">Price (THB)</label>
-          <input type="number" id="price" min="0">
-        </div>
-        <div>
-          <label for="capacity">Capacity</label>
-          <input type="number" id="capacity" min="1">
-        </div>
-      </div>
-      <div class="form-row">
-        <div>
-          <label for="photo">Photo (optional)</label>
-          <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
-        </div>
-      </div>
-      <button type="submit">Submit for approval</button>
-      <div id="new-listing-msg"></div>
-    </form>
-  </div>
+<main class="main">
+  <div class="wrap stack">
 
-  <h2 id="listings-heading">My listings</h2>
-  <div id="listings"></div>
+    <section id="next-section" hidden aria-label="Next up">
+      <div class="card card-lift next" id="next"></div>
+    </section>
 
-  <script>
-    function esc(s) {
-      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    }
+    <section id="attention-section" hidden>
+      <div class="section-head"><h2 class="display">Needs your attention</h2><span class="count" id="attention-count"></span></div>
+      <div class="rows" id="attention"></div>
+    </section>
 
-    async function loadUser() {
-      const meRes = await fetch('/api/auth/me', { credentials: 'include' });
-      if (!meRes.ok) {
-        window.location.href = '/login.html';
-        return null;
-      }
-      const { user } = await meRes.json();
-      document.getElementById('greeting').textContent = `${user.name}'s dashboard`;
-      document.getElementById('listings-heading').textContent = `${user.name}'s listings`;
-      return user;
-    }
-
-    async function loadListings() {
-      const listingsRes = await fetch('/api/my-listings', { credentials: 'include' });
-      const { listings } = await listingsRes.json();
-      const container = document.getElementById('listings');
-
-      document.getElementById('stat-total').textContent = listings.length;
-      document.getElementById('stat-approved').textContent = listings.filter(l => l.status === 'approved').length;
-
-      if (listings.length === 0) {
-        container.innerHTML = '<div id="empty">No listings yet. Create one above.</div>';
-        return;
-      }
-
-      container.innerHTML = listings.map(l => `
-        <div class="card">
-          <div class="card-top">
-            <div>
-              ${l.photo_key ? `<img src="/api/photo/${esc(l.photo_key)}" alt="${esc(l.title_en)}" class="listing-photo">` : ''}
-              <div class="title">${esc(l.title_en)}</div>
-              <div class="meta">${esc(l.start_time)} to ${esc(l.end_time)}</div>
+    <section>
+      <div class="section-head"><h2 class="display">Propose a class</h2></div>
+      <form class="card" id="new-listing-form" novalidate>
+        <div class="form-section">
+          <div class="step"><span class="num">1</span><div><h3>What</h3><p>The name people will book, and where it sits on the Classes page.</p></div></div>
+          <div class="form-grid">
+            <div class="field" id="f-title">
+              <label for="title">Class title</label>
+              <input class="control" type="text" id="title" maxlength="120" placeholder="Slow Morning Hatha" required>
+              <div class="field-error" aria-live="polite"><span></span></div>
             </div>
-            <span class="status ${esc(l.status)}">${esc(l.status)}</span>
+            <div class="field">
+              <label for="category">Category</label>
+              <select class="control" id="category">
+                <option value="yoga">Yoga</option>
+                <option value="dance">Dance</option>
+                <option value="capoeira">Capoeira</option>
+                <option value="watercolour">Watercolour</option>
+                <option value="movement-lab">Movement lab</option>
+                <option value="sound-healing">Sound healing</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
           </div>
-          <div class="actions">
-            <button class="view-attendees-btn" data-id="${l.id}">View attendees</button>
-          </div>
-          <div class="roster" id="roster-${l.id}" style="display:none;"></div>
         </div>
-      `).join('');
+        <div class="form-section">
+          <div class="step"><span class="num">2</span><div><h3>When</h3><p>Studio time is Chiang Mai time. The admin checks the room is free.</p></div></div>
+          <div class="form-grid">
+            <div class="field" id="f-start">
+              <label for="start">Starts</label>
+              <input class="control" type="datetime-local" id="start" required>
+              <div class="field-error" aria-live="polite"><span></span></div>
+            </div>
+            <div class="field" id="f-end">
+              <label for="end">Ends</label>
+              <input class="control" type="datetime-local" id="end" required>
+              <div class="field-error" aria-live="polite"><span></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="step"><span class="num">3</span><div><h3>Price and places</h3><p>Leave capacity blank for no limit. Add a photo if you have one, we shrink it for you.</p></div></div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="price">Price per person (THB)</label>
+              <input class="control" type="number" id="price" min="0" step="1" inputmode="numeric" placeholder="350">
+            </div>
+            <div class="field">
+              <label for="capacity">Capacity</label>
+              <input class="control" type="number" id="capacity" min="1" step="1" inputmode="numeric" placeholder="No limit">
+            </div>
+            <div class="field" style="grid-column:1 / -1">
+              <label for="photo">Photo (optional)</label>
+              <label class="drop" id="drop">
+                <span class="preview" id="preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m21 16-5-5-8 8"/></svg></span>
+                <span class="text"><b id="drop-title">Drop a photo here or <span class="accent">browse</span></b><span id="drop-hint">JPEG, PNG or WebP. Converted to WebP under 200KB in your browser.</span></span>
+                <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-foot">
+          <span class="hint">New classes start as pending. You will see it move to approved here.</span>
+          <button class="btn btn-fill" type="submit" id="submit-listing"><span class="label">Submit for approval</span><span class="spinner" aria-hidden="true"></span></button>
+        </div>
+        <div class="reveal" id="form-error" role="alert" style="padding:0 clamp(1rem,3vw,1.5rem)">
+          <div><div class="notice notice-bad" style="margin-bottom:1rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span></span></div></div>
+        </div>
+      </form>
+    </section>
 
-      document.querySelectorAll('.view-attendees-btn').forEach(btn => {
-        btn.addEventListener('click', () => toggleRoster(btn.dataset.id));
+    <section>
+      <div class="section-head"><h2 class="display">All your classes</h2><span class="count" id="all-count"></span></div>
+      <div class="rows" id="listings"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </section>
+
+  </div>
+</main>
+
+<div class="toast" role="status" aria-live="polite"></div>
+<div class="bye" aria-hidden="true"><div class="display">See you at the studio.</div><p>Signing you out</p></div>
+
+<script src="js/photo-upload.js"></script>
+<script src="js/app.js"></script>
+<script>
+(function () {
+  var esc = App.esc;
+  var CAT = { yoga: 'Yoga', dance: 'Dance', capoeira: 'Capoeira', watercolour: 'Watercolour', 'movement-lab': 'Movement lab', 'sound-healing': 'Sound healing', other: 'Other' };
+  var TAG = { approved: 'tag-ok', pending: 'tag-warn', declined: 'tag-bad' };
+  var STATUS_LABEL = { approved: 'Approved', pending: 'Awaiting approval', declined: 'Declined' };
+  var user, listings = [];
+
+  function greeting(name) {
+    var h = new Date().getHours();
+    var part = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    return part + ', ' + name + '.';
+  }
+
+  function thumb(l) {
+    return l.photo_key
+      ? '<img class="thumb" src="/api/photo/' + esc(l.photo_key) + '" alt="" width="52" height="52" loading="lazy">'
+      : '<span class="thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>';
+  }
+
+  function rowHtml(l) {
+    var past = App.isPast(l);
+    return '<article class="row' + (past ? ' past' : '') + '" data-status="' + esc(l.status) + '" data-id="' + l.id + '">'
+      + thumb(l)
+      + '<div class="row-body"><div class="row-title">' + esc(l.title_en) + '</div>'
+      + '<div class="row-when">' + esc(App.fmtWhen(l.start_time, l.end_time)) + '</div>'
+      + '<div class="row-tags"><span class="tag ' + (TAG[l.status] || '') + '">' + esc(STATUS_LABEL[l.status] || l.status) + '</span>'
+      + (l.category ? '<span class="tag tag-cat" data-cat="' + esc(l.category) + '">' + esc(CAT[l.category] || l.category) + '</span>' : '')
+      + (past ? '<span class="tag">Past</span>' : '') + '</div></div>'
+      + '<div class="row-side">' + (l.price != null ? '<span class="row-price">฿' + esc(l.price) + '</span>' : '')
+      + '<button class="btn btn-ghost btn-sm roster-btn" type="button" aria-expanded="false" data-id="' + l.id + '">Attendees <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button></div>'
+      + '<div class="panel" id="panel-' + l.id + '"><div><div class="panel-inner" id="roster-' + l.id + '"></div></div></div>'
+      + '</article>';
+  }
+
+  function bindRosters(root) {
+    root.querySelectorAll('.roster-btn').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        var id = btn.dataset.id;
+        var panel = document.getElementById('panel-' + id);
+        var on = App.togglePanel(panel, btn);
+        if (on && !panel.dataset.loaded) {
+          await App.loadRoster(id, document.getElementById('roster-' + id));
+          panel.dataset.loaded = '1';
+        }
       });
-    }
+    });
+  }
 
-    async function toggleRoster(listingId) {
-      const rosterEl = document.getElementById(`roster-${listingId}`);
-      if (rosterEl.style.display === 'block') {
-        rosterEl.style.display = 'none';
-        return;
-      }
-      const res = await fetch(`/api/my-listings/${listingId}/attendees`, { credentials: 'include' });
+  async function renderNext() {
+    var section = document.getElementById('next-section');
+    var upcoming = listings.filter(function (l) { return l.status === 'approved' && !App.isPast(l); })
+      .sort(function (a, b) { return a.start_time < b.start_time ? -1 : 1; });
+    if (!upcoming.length) { section.hidden = true; return; }
+    var l = upcoming[0];
+    section.hidden = false;
+    var el = document.getElementById('next');
+    el.classList.toggle('no-media', !l.photo_key);
+    el.innerHTML = '<div class="next-media">' + (l.photo_key
+        ? '<img src="/api/photo/' + esc(l.photo_key) + '" alt="" width="240" height="240">'
+        : '<span class="placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>') + '</div>'
+      + '<div class="next-body"><span class="eyebrow">Your next class</span><h3 class="display">' + esc(l.title_en) + '</h3>'
+      + '<div class="next-when">' + esc(App.fmtWhen(l.start_time, l.end_time)) + '</div>'
+      + '<div class="next-meta">' + (l.price != null ? '<span><b>฿' + esc(l.price) + '</b> per person</span>' : '')
+      + (l.category ? '<span class="tag tag-cat" data-cat="' + esc(l.category) + '" style="margin:0">' + esc(CAT[l.category] || l.category) + '</span>' : '') + '</div>'
+      + '<div class="seats" id="next-seats"><div class="bar"><i></i></div><span id="next-seats-label">Checking bookings</span></div>'
+      + '<div class="next-actions"><button class="btn btn-fill btn-sm" type="button" id="next-roster-btn" aria-expanded="false">See who is coming</button>'
+      + '<a class="btn btn-ghost btn-sm" href="book.html?listing=' + l.id + '" target="_blank" rel="noopener">Public booking link</a></div>'
+      + '<div class="panel" id="next-panel"><div><div class="panel-inner" id="next-roster"></div></div></div></div>';
+
+    var data = await App.loadRoster(l.id, document.getElementById('next-roster'));
+    var seats = document.getElementById('next-seats');
+    var label = document.getElementById('next-seats-label');
+    if (data) {
+      var n = data.attendees.length, cap = data.listing.capacity;
+      label.textContent = cap ? n + ' of ' + cap + ' places booked' : n + ' booked, no limit';
+      var fill = cap ? Math.min(1, n / cap) : (n ? 1 : 0);
+      seats.classList.toggle('full', !!cap && n >= cap);
+      requestAnimationFrame(function () { seats.querySelector('.bar i').style.setProperty('--fill', fill); });
+    } else {
+      label.textContent = 'Bookings unavailable';
+    }
+    var btn = document.getElementById('next-roster-btn');
+    btn.addEventListener('click', function () { App.togglePanel(document.getElementById('next-panel'), btn); });
+  }
+
+  function renderAttention() {
+    var section = document.getElementById('attention-section');
+    var items = listings.filter(function (l) { return (l.status === 'pending' || l.status === 'declined') && !App.isPast(l); });
+    section.hidden = !items.length;
+    document.getElementById('attention-count').textContent = items.length ? items.length + (items.length === 1 ? ' item' : ' items') : '';
+    var root = document.getElementById('attention');
+    root.innerHTML = items.map(rowHtml).join('');
+    bindRosters(root);
+  }
+
+  function renderAll() {
+    var root = document.getElementById('listings');
+    document.getElementById('all-count').textContent = listings.length ? listings.length + (listings.length === 1 ? ' class' : ' classes') : '';
+    if (!listings.length) {
+      root.innerHTML = '<div class="card empty"><b>Nothing here yet</b>Propose your first class above and it will appear here.</div>';
+      return;
+    }
+    root.innerHTML = listings.map(rowHtml).join('');
+    bindRosters(root);
+  }
+
+  function renderStats() {
+    var upcoming = listings.filter(function (l) { return l.status === 'approved' && !App.isPast(l); }).length;
+    var pending = listings.filter(function (l) { return l.status === 'pending' && !App.isPast(l); }).length;
+    var past = listings.filter(App.isPast).length;
+    document.getElementById('stat-upcoming').textContent = upcoming;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-past').textContent = past;
+    document.getElementById('sub').textContent = upcoming
+      ? 'You have ' + upcoming + (upcoming === 1 ? ' class' : ' classes') + ' coming up at the studio.'
+      : 'No upcoming classes yet. Propose one below and the studio will confirm the room.';
+  }
+
+  async function loadListings() {
+    var res = await fetch('/api/my-listings', { credentials: 'include' });
+    if (!res.ok) { location.href = '/login.html'; return; }
+    listings = (await res.json()).listings || [];
+    renderStats();
+    renderAttention();
+    renderAll();
+    renderNext();
+  }
+
+  var photoInput = document.getElementById('photo');
+  var drop = document.getElementById('drop');
+  var pendingPhoto = null;
+  async function pickPhoto(file) {
+    if (!file) return;
+    document.getElementById('drop-title').textContent = 'Preparing photo';
+    pendingPhoto = await window.resizeToWebp(file);
+    var url = URL.createObjectURL(pendingPhoto);
+    var preview = document.getElementById('preview');
+    preview.innerHTML = '<img src="' + url + '" alt="" width="64" height="64" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+    document.getElementById('drop-title').textContent = file.name;
+    document.getElementById('drop-hint').textContent = Math.round(pendingPhoto.size / 1024) + ' KB WebP, ready to upload. Click to change.';
+  }
+  photoInput.addEventListener('change', function () { pickPhoto(photoInput.files[0]); });
+  ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) { pickPhoto(e.dataTransfer.files[0]); });
+
+  function resetPhoto() {
+    pendingPhoto = null;
+    document.getElementById('preview').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m21 16-5-5-8 8"/></svg>';
+    document.getElementById('drop-title').innerHTML = 'Drop a photo here or <span class="accent">browse</span>';
+    document.getElementById('drop-hint').textContent = 'JPEG, PNG or WebP. Converted to WebP under 200KB in your browser.';
+  }
+
+  var form = document.getElementById('new-listing-form');
+  var fTitle = document.getElementById('f-title'), fStart = document.getElementById('f-start'), fEnd = document.getElementById('f-end');
+  function validate() {
+    var ok = true;
+    var title = document.getElementById('title').value.trim();
+    var start = document.getElementById('start').value, end = document.getElementById('end').value;
+    App.setFieldError(fTitle, title ? '' : 'Give the class a title'); ok = ok && !!title;
+    App.setFieldError(fStart, start ? '' : 'Pick a start time'); ok = ok && !!start;
+    if (!end) { App.setFieldError(fEnd, 'Pick an end time'); ok = false; }
+    else if (start && end <= start) { App.setFieldError(fEnd, 'End must be after the start'); ok = false; }
+    else App.setFieldError(fEnd, '');
+    return ok;
+  }
+  ['title', 'start', 'end'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', function () {
+      if (form.querySelector('[data-invalid="true"]')) validate();
+    });
+  });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var formError = document.getElementById('form-error');
+    App.reveal(formError, false);
+    if (!validate()) return;
+    var submit = document.getElementById('submit-listing');
+    App.busy(submit, true);
+    var body = new FormData();
+    body.set('title_en', document.getElementById('title').value.trim());
+    body.set('category', document.getElementById('category').value);
+    body.set('start_time', document.getElementById('start').value.slice(0, 16).replace('T', ' '));
+    body.set('end_time', document.getElementById('end').value.slice(0, 16).replace('T', ' '));
+    body.set('price', document.getElementById('price').value || '');
+    body.set('capacity', document.getElementById('capacity').value || '');
+    if (pendingPhoto) body.set('photo', pendingPhoto);
+    try {
+      var res = await fetch('/api/my-listings', { method: 'POST', credentials: 'include', body: body });
+      var data = await res.json();
       if (!res.ok) {
-        rosterEl.innerHTML = '<div class="roster-empty">Could not load attendees.</div>';
-        rosterEl.style.display = 'block';
+        formError.querySelector('.notice span').textContent = data.error || 'Something went wrong.';
+        App.reveal(formError, true);
         return;
       }
-      const { attendees, listing, spots_filled } = await res.json();
-      rosterEl.innerHTML = attendees.length === 0
-        ? '<div class="roster-empty">No bookings yet.</div>'
-        : `<div class="roster-count">${spots_filled}${listing.capacity ? ' / ' + listing.capacity : ''} booked</div>` +
-          attendees.map(a => `
-            <div class="roster-row">
-              <span>${esc(a.attendee_name)}${a.attendee_phone ? ' &middot; ' + esc(a.attendee_phone) : ''}</span>
-              <span class="pay-status ${esc(a.payment_status)}">${esc(a.payment_status)}</span>
-            </div>
-          `).join('');
-      rosterEl.style.display = 'block';
+      form.reset();
+      resetPhoto();
+      App.toast('Submitted. The studio will review it shortly.');
+      await loadListings();
+      document.getElementById('attention-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      formError.querySelector('.notice span').textContent = 'Could not reach the studio. Check your connection and try again.';
+      App.reveal(formError, true);
+    } finally {
+      App.busy(submit, false);
     }
+  });
 
-    document.getElementById('new-listing-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const msg = document.getElementById('new-listing-msg');
-      msg.style.display = 'none';
+  document.getElementById('logout').addEventListener('click', App.logout);
 
-      const body = new FormData();
-      body.set('title_en', document.getElementById('title').value);
-      body.set('category', document.getElementById('category').value);
-      body.set('start_time', document.getElementById('start').value.replace('T', ' '));
-      body.set('end_time', document.getElementById('end').value.replace('T', ' '));
-      body.set('price', document.getElementById('price').value || '');
-      body.set('capacity', document.getElementById('capacity').value || '');
-      const photoFile = document.getElementById('photo').files[0];
-      if (photoFile) body.set('photo', await window.resizeToWebp(photoFile));
-
-      const res = await fetch('/api/my-listings', {
-        method: 'POST',
-        credentials: 'include',
-        body
-      });
-      const data = await res.json();
-
-      msg.style.display = 'block';
-      if (res.ok) {
-        msg.className = 'success';
-        msg.textContent = 'Submitted. Waiting on admin approval.';
-        document.getElementById('new-listing-form').reset();
-        loadListings();
-      } else {
-        msg.className = 'error';
-        msg.textContent = data.error || 'Something went wrong.';
-      }
-    });
-
-    document.getElementById('logout').addEventListener('click', async () => {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-      window.location.href = '/login.html';
-    });
-
-    (async () => {
-      const user = await loadUser();
-      if (user) await loadListings();
-    })();
-  </script>
+  (async function init() {
+    user = await App.me();
+    if (!user) { location.href = '/login.html'; return; }
+    if (user.role === 'admin') { location.href = '/admin.html'; return; }
+    document.getElementById('greeting').textContent = greeting(user.name);
+    await loadListings();
+  })();
+})();
+</script>
 </body>
 </html>
