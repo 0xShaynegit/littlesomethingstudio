@@ -4,7 +4,7 @@ export async function onRequestGet(context) {
   const id = params.id;
 
   const facilitator = await env.DB
-    .prepare("SELECT id, name, bio, photo_key, line_id, promptpay_id FROM users WHERE id = ? AND role = ? AND status = 'approved'")
+    .prepare("SELECT id, name, bio, photo_key FROM users WHERE id = ? AND role = ? AND status = 'approved'")
     .bind(id, 'facilitator')
     .first();
 

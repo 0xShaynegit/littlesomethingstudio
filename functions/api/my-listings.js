@@ -61,6 +61,13 @@ export async function onRequestPost(context) {
       { status: 400 }
     );
   }
+  const timeFormat = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
+  if (!timeFormat.test(start_time) || !timeFormat.test(end_time)) {
+    return Response.json({ error: 'Times must be in YYYY-MM-DD HH:MM format' }, { status: 400 });
+  }
+  if (end_time <= start_time) {
+    return Response.json({ error: 'End time must be after start time' }, { status: 400 });
+  }
 
   let photoKey = null;
   if (photo && photo.size > 0) {

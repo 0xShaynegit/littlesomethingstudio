@@ -28,7 +28,7 @@ export async function onRequestGet(context) {
     .first();
 
   const facilitatorCountRow = await env.DB
-    .prepare(`SELECT COUNT(*) AS count FROM users WHERE role = 'facilitator'`)
+    .prepare(`SELECT COUNT(*) AS count FROM users WHERE role = 'facilitator' AND status = 'approved'`)
     .first();
 
   return Response.json({

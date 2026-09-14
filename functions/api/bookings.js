@@ -11,33 +11,36 @@ export async function onRequestPost(context) {
     );
   }
 
+  if (!['cash', 'promptpay'].includes(payment_method)) {
+    return Response.json({ error: 'payment_method must be cash or promptpay' }, { status: 400 });
+  }
+
   const listing = await env.DB
-    .prepare('SELECT id, capacity FROM listings WHERE id = ? AND status = ?')
-    .bind(listing_id, 'approved')
+    .prepare("SELECT id, capacity FROM listings WHERE id = ? AND status = 'approved' AND end_time > datetime('now', '+7 hours')")
+    .bind(listing_id)
     .first();
 
   if (!listing) {
-    return Response.json({ error: 'Listing not found or not approved' }, { status: 404 });
+    return Response.json({ error: 'Listing not found, not approved, or already finished' }, { status: 404 });
   }
 
-  if (listing.capacity != null) {
-    const { count } = await env.DB
-      .prepare('SELECT COUNT(*) as count FROM bookings WHERE listing_id = ?')
-      .bind(listing_id)
-      .first();
-
-    if (count >= listing.capacity) {
-      return Response.json({ error: 'This class is fully booked' }, { status: 409 });
-    }
-  }
-
+  // Capacity check and insert in one statement so two simultaneous bookings
+  // cannot both pass a separate count-then-insert check.
   const result = await env.DB
     .prepare(`
       INSERT INTO bookings (listing_id, attendee_name, attendee_phone, attendee_line, payment_method, payment_status)
-      VALUES (?, ?, ?, ?, ?, 'pending')
+      SELECT ?, ?, ?, ?, ?, 'pending'
+      WHERE ? IS NULL OR (SELECT COUNT(*) FROM bookings WHERE listing_id = ?) < ?
     `)
-    .bind(listing_id, attendee_name, attendee_phone || null, attendee_line || null, payment_method)
+    .bind(
+      listing_id, String(attendee_name).trim(), attendee_phone || null, attendee_line || null, payment_method,
+      listing.capacity, listing_id, listing.capacity
+    )
     .run();
+
+  if (result.meta.changes === 0) {
+    return Response.json({ error: 'This class is fully booked' }, { status: 409 });
+  }
 
   return Response.json({ success: true, booking_id: result.meta.last_row_id }, { status: 201 });
 }

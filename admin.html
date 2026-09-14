@@ -123,6 +123,10 @@
   <script>
     let listings = [];
 
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
     async function init() {
       const meRes = await fetch('/api/auth/me', { credentials: 'include' });
       if (!meRes.ok) { window.location.href = '/login.html'; return; }
@@ -157,9 +161,9 @@
           <div class="card">
             <div class="card-top">
               <div>
-                ${u.photo_key ? `<img src="/api/photo/${u.photo_key}" alt="${u.name}" class="pending-photo">` : ''}
-                <div class="title">${u.name}</div>
-                <div class="meta">${u.email}${u.bio ? ` &middot; ${u.bio}` : ''}</div>
+                ${u.photo_key ? `<img src="/api/photo/${esc(u.photo_key)}" alt="${esc(u.name)}" class="pending-photo">` : ''}
+                <div class="title">${esc(u.name)}</div>
+                <div class="meta">${esc(u.email)}${u.bio ? ` &middot; ${esc(u.bio)}` : ''}</div>
               </div>
             </div>
             <div class="actions">
@@ -181,8 +185,8 @@
       container.innerHTML = approved.map(u => `
         <div class="user-row">
           <div>
-            <span class="user-name">${u.name}</span>
-            <span class="user-email">&middot; ${u.email} &middot; ${u.role}</span>
+            <span class="user-name">${esc(u.name)}</span>
+            <span class="user-email">&middot; ${esc(u.email)} &middot; ${esc(u.role)}</span>
             ${u.has_password ? '' : '<div class="no-password">No password set yet</div>'}
           </div>
           <button data-reset-link="${u.id}">Generate reset link</button>
@@ -222,7 +226,7 @@
         return;
       }
 
-      box.innerHTML = `Send this to them (valid 24 hours):<br>${data.reset_url}`;
+      box.innerHTML = `Send this to them (valid 24 hours):<br>${esc(data.reset_url)}`;
       box.hidden = false;
     }
 
@@ -245,7 +249,7 @@
       for (let i = 0; i < 14; i++) {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
-        const iso = d.toISOString().split('T')[0];
+        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
         const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const hasClasses = calendar[iso] && calendar[iso].length > 0;
@@ -283,7 +287,7 @@
       const hasConflict = l.status === 'pending' && l.conflicts && l.conflicts.length > 0;
       const conflictWarning = hasConflict ? `
         <div class="conflict-warning">
-          ⚠ Clashes with ${l.conflicts.map(c => `<strong>${c.title_en}</strong> (${c.facilitator_name}, ${c.start_time}–${c.end_time})`).join(', ')}
+          Clashes with ${l.conflicts.map(c => `<strong>${esc(c.title_en)}</strong> (${esc(c.facilitator_name)}, ${esc(c.start_time)} to ${esc(c.end_time)})`).join(', ')}
         </div>` : '';
       const actionButtons = l.status === 'pending' ? `
         <div class="actions">
@@ -294,11 +298,11 @@
         <div class="card">
           <div class="card-top">
             <div>
-              ${l.photo_key ? `<img src="/api/photo/${l.photo_key}" alt="${l.title_en}" class="listing-photo">` : ''}
-              <div class="title">${l.title_en}</div>
-              <div class="meta">${l.facilitator_name} &middot; ${l.start_time} to ${l.end_time}</div>
+              ${l.photo_key ? `<img src="/api/photo/${esc(l.photo_key)}" alt="${esc(l.title_en)}" class="listing-photo">` : ''}
+              <div class="title">${esc(l.title_en)}</div>
+              <div class="meta">${esc(l.facilitator_name)} &middot; ${esc(l.start_time)} to ${esc(l.end_time)}</div>
             </div>
-            <span class="status ${l.status}">${l.status}</span>
+            <span class="status ${esc(l.status)}">${esc(l.status)}</span>
           </div>
           ${conflictWarning}
           <div class="actions">
@@ -327,8 +331,8 @@
         : `<div class="roster-count">${spots_filled}${listing.capacity ? ' / ' + listing.capacity : ''} booked</div>` +
           attendees.map(a => `
             <div class="roster-row">
-              <span>${a.attendee_name}${a.attendee_phone ? ' &middot; ' + a.attendee_phone : ''}</span>
-              <span class="pay-status ${a.payment_status}">${a.payment_status}</span>
+              <span>${esc(a.attendee_name)}${a.attendee_phone ? ' &middot; ' + esc(a.attendee_phone) : ''}</span>
+              <span class="pay-status ${esc(a.payment_status)}">${esc(a.payment_status)}</span>
             </div>
           `).join('');
       rosterEl.style.display = 'block';

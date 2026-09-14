@@ -1,0 +1,29 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/api/*
+  Cache-Control: no-store
+
+/api/photo/*
+  Cache-Control: public, max-age=86400
+
+/login.html
+  X-Frame-Options: DENY
+  Cache-Control: no-store
+
+/dashboard.html
+  X-Frame-Options: DENY
+  Cache-Control: no-store
+
+/admin.html
+  X-Frame-Options: DENY
+  Cache-Control: no-store
+
+/signup.html
+  X-Frame-Options: DENY
+
+/reset-password.html
+  X-Frame-Options: DENY
+  Cache-Control: no-store

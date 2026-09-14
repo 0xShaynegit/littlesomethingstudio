@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
   const category = url.searchParams.get('category');
 
   let query = `
-    SELECT listings.*, users.name AS facilitator_name, users.line_id AS facilitator_line
+    SELECT listings.*, users.name AS facilitator_name
     FROM listings
     JOIN users ON listings.facilitator_id = users.id
     WHERE listings.status = 'approved'

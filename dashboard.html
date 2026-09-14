@@ -199,6 +199,10 @@
   <div id="listings"></div>
 
   <script>
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
     async function loadUser() {
       const meRes = await fetch('/api/auth/me', { credentials: 'include' });
       if (!meRes.ok) {
@@ -228,11 +232,11 @@
         <div class="card">
           <div class="card-top">
             <div>
-              ${l.photo_key ? `<img src="/api/photo/${l.photo_key}" alt="${l.title_en}" class="listing-photo">` : ''}
-              <div class="title">${l.title_en}</div>
-              <div class="meta">${l.start_time} to ${l.end_time}</div>
+              ${l.photo_key ? `<img src="/api/photo/${esc(l.photo_key)}" alt="${esc(l.title_en)}" class="listing-photo">` : ''}
+              <div class="title">${esc(l.title_en)}</div>
+              <div class="meta">${esc(l.start_time)} to ${esc(l.end_time)}</div>
             </div>
-            <span class="status ${l.status}">${l.status}</span>
+            <span class="status ${esc(l.status)}">${esc(l.status)}</span>
           </div>
           <div class="actions">
             <button class="view-attendees-btn" data-id="${l.id}">View attendees</button>
@@ -264,8 +268,8 @@
         : `<div class="roster-count">${spots_filled}${listing.capacity ? ' / ' + listing.capacity : ''} booked</div>` +
           attendees.map(a => `
             <div class="roster-row">
-              <span>${a.attendee_name}${a.attendee_phone ? ' &middot; ' + a.attendee_phone : ''}</span>
-              <span class="pay-status ${a.payment_status}">${a.payment_status}</span>
+              <span>${esc(a.attendee_name)}${a.attendee_phone ? ' &middot; ' + esc(a.attendee_phone) : ''}</span>
+              <span class="pay-status ${esc(a.payment_status)}">${esc(a.payment_status)}</span>
             </div>
           `).join('');
       rosterEl.style.display = 'block';

@@ -1,10 +1,11 @@
 // Moves listings (and their bookings) whose end_time has passed into the
 // archive tables, so live queries never have to filter old events out.
 // Cheap to call on every read: the WHERE clause is empty once nothing new
-// has aged out since the last call.
+// has aged out since the last call. Listing times are stored as Thai local
+// time (UTC+7) with no zone, so "now" is shifted to match.
 export async function archivePastListings(env) {
   const { results: expired } = await env.DB
-    .prepare("SELECT id FROM listings WHERE end_time < datetime('now')")
+    .prepare("SELECT id FROM listings WHERE end_time < datetime('now', '+7 hours')")
     .all();
 
   if (expired.length === 0) return;

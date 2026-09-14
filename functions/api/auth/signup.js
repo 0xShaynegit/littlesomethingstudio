@@ -10,14 +10,17 @@ export async function onRequestPost(context) {
   const { env, request } = context;
   const form = await request.formData();
 
-  const name = form.get('name');
-  const email = form.get('email');
+  const name = String(form.get('name') || '').trim();
+  const email = String(form.get('email') || '').trim().toLowerCase();
   const password = form.get('password');
-  const bio = form.get('bio');
+  const bio = String(form.get('bio') || '').trim();
   const photo = form.get('photo');
 
   if (!name || !email || !password) {
     return Response.json({ error: 'Name, email, and password are required' }, { status: 400 });
+  }
+  if (name.length > 80 || bio.length > 1000 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return Response.json({ error: 'Please check your name, email, and bio' }, { status: 400 });
   }
 
   const pwError = passwordError(password);

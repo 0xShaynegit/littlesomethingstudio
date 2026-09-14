@@ -10,7 +10,9 @@ function generateSessionId() {
 
 export async function onRequestPost(context) {
   const { env, request } = context;
-  const { email, password } = await request.json();
+  const body = await request.json();
+  const password = body.password;
+  const email = String(body.email || '').trim().toLowerCase();
 
   if (!email || !password) {
     return Response.json({ error: 'Email and password are required' }, { status: 400 });
