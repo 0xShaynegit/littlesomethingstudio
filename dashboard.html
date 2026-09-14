@@ -93,6 +93,7 @@
       margin-bottom: 10px;
       box-shadow: 0 1px 8px rgba(58,74,63,0.05);
     }
+    .listing-photo { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; margin-bottom: 8px; display: block; }
     .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
     .title { font-weight: 600; font-size: 1rem; }
     .meta { font-size: 0.85rem; color: #7a7568; margin-top: 3px; }
@@ -183,6 +184,12 @@
           <input type="number" id="capacity" min="1">
         </div>
       </div>
+      <div class="form-row">
+        <div>
+          <label for="photo">Photo (optional)</label>
+          <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
+        </div>
+      </div>
       <button type="submit">Submit for approval</button>
       <div id="new-listing-msg"></div>
     </form>
@@ -221,6 +228,7 @@
         <div class="card">
           <div class="card-top">
             <div>
+              ${l.photo_key ? `<img src="/api/photo/${l.photo_key}" alt="${l.title_en}" class="listing-photo">` : ''}
               <div class="title">${l.title_en}</div>
               <div class="meta">${l.start_time} to ${l.end_time}</div>
             </div>
@@ -268,20 +276,20 @@
       const msg = document.getElementById('new-listing-msg');
       msg.style.display = 'none';
 
-      const body = {
-        title_en: document.getElementById('title').value,
-        category: document.getElementById('category').value,
-        start_time: document.getElementById('start').value.replace('T', ' '),
-        end_time: document.getElementById('end').value.replace('T', ' '),
-        price: document.getElementById('price').value || null,
-        capacity: document.getElementById('capacity').value || null
-      };
+      const body = new FormData();
+      body.set('title_en', document.getElementById('title').value);
+      body.set('category', document.getElementById('category').value);
+      body.set('start_time', document.getElementById('start').value.replace('T', ' '));
+      body.set('end_time', document.getElementById('end').value.replace('T', ' '));
+      body.set('price', document.getElementById('price').value || '');
+      body.set('capacity', document.getElementById('capacity').value || '');
+      const photoFile = document.getElementById('photo').files[0];
+      if (photoFile) body.set('photo', photoFile);
 
       const res = await fetch('/api/my-listings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(body)
+        body
       });
       const data = await res.json();
 

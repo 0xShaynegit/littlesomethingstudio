@@ -168,7 +168,9 @@
   function cardHtml(f) {
     var asset = ASSETS[f.name] || {};
     var href = 'facilitator-' + f.name.toLowerCase() + '.html';
-    var media = asset.photo
+    var media = f.photo_key
+      ? '<img src="/api/photo/' + f.photo_key + '" width="400" height="400" alt="' + escapeHtml(f.name) + '" loading="lazy">'
+      : asset.photo
       ? '<picture><source type="image/avif" srcset="' + asset.avif + '"><img src="' + asset.webp + '" width="400" height="400" alt="' + escapeHtml(asset.alt) + '" loading="lazy"></picture>'
       : '<img src="' + (asset.avatar || '') + '" width="200" height="200" alt="' + escapeHtml(asset.alt || f.name) + '" loading="lazy">';
     var tags = f.categories.map(function (c) {

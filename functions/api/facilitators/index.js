@@ -2,7 +2,7 @@
 export async function onRequestGet(context) {
   const { env } = context;
   const { results: facilitators } = await env.DB
-    .prepare('SELECT id, name, bio FROM users WHERE role = ? ORDER BY id')
+    .prepare("SELECT id, name, bio, photo_key FROM users WHERE role = ? AND status = 'approved' ORDER BY id")
     .bind('facilitator')
     .all();
 

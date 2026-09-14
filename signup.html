@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Facilitator Signup: The Little Something Studio</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F7F3EC;
+      color: #2B2B28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem 0;
+    }
+    .card {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    h1 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .sub {
+      font-size: 0.85rem;
+      color: #7a7568;
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: #555;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #C1653D;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    #error {
+      color: #b3261e;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+      display: none;
+    }
+    #success {
+      color: #2f6b2f;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+      display: none;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Facilitator Signup</h1>
+    <div class="sub">Create your account to offer classes at The Little Something Studio. An admin will review and approve it before you can log in.</div>
+    <form id="signup-form">
+      <label for="name">Name</label>
+      <input type="text" id="name" required>
+      <label for="email">Email</label>
+      <input type="email" id="email" required>
+      <label for="password">Password</label>
+      <input type="password" id="password" required minlength="8">
+      <label for="bio">Bio</label>
+      <textarea id="bio" placeholder="A short intro for your facilitator profile"></textarea>
+      <label for="photo">Profile photo</label>
+      <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
+      <button type="submit">Create account</button>
+    </form>
+    <div id="error"></div>
+    <div id="success"></div>
+  </div>
+
+  <script>
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorEl = document.getElementById('error');
+      const successEl = document.getElementById('success');
+      errorEl.style.display = 'none';
+      successEl.style.display = 'none';
+
+      const body = new FormData();
+      body.set('name', document.getElementById('name').value);
+      body.set('email', document.getElementById('email').value);
+      body.set('password', document.getElementById('password').value);
+      body.set('bio', document.getElementById('bio').value);
+      const photoFile = document.getElementById('photo').files[0];
+      if (photoFile) body.set('photo', photoFile);
+
+      try {
+        const res = await fetch('/api/auth/signup', { method: 'POST', body });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorEl.textContent = data.error || 'Signup failed';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        document.getElementById('signup-form').style.display = 'none';
+        successEl.textContent = 'Account created. An admin will review it, then you can log in.';
+        successEl.style.display = 'block';
+      } catch (err) {
+        errorEl.textContent = 'Something went wrong. Try again.';
+        errorEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

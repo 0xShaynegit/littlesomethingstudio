@@ -12,12 +12,23 @@ export async function onRequestPost(context) {
   }
 
   const listing = await env.DB
-    .prepare('SELECT id FROM listings WHERE id = ? AND status = ?')
+    .prepare('SELECT id, capacity FROM listings WHERE id = ? AND status = ?')
     .bind(listing_id, 'approved')
     .first();
 
   if (!listing) {
     return Response.json({ error: 'Listing not found or not approved' }, { status: 404 });
+  }
+
+  if (listing.capacity != null) {
+    const { count } = await env.DB
+      .prepare('SELECT COUNT(*) as count FROM bookings WHERE listing_id = ?')
+      .bind(listing_id)
+      .first();
+
+    if (count >= listing.capacity) {
+      return Response.json({ error: 'This class is fully booked' }, { status: 409 });
+    }
   }
 
   const result = await env.DB

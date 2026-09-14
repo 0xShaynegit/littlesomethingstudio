@@ -230,7 +230,9 @@
     var start = parseLocal(listing.start_time);
     var end = parseLocal(listing.end_time);
     var sessionLabel = listing.title_en + ', ' + fmtDate(start) + ' ' + fmtTime(start);
-    var media = asset.photo
+    var media = listing.photo_key
+      ? '<img src="/api/photo/' + listing.photo_key + '" width="400" height="400" alt="" loading="lazy">'
+      : asset.photo
       ? '<picture><source type="image/avif" srcset="' + asset.avif + '"><img src="' + asset.webp + '" width="400" height="400" alt="' + escapeHtml(asset.alt) + '" loading="lazy"></picture>'
       : '<img src="' + (asset.avatar || '') + '" width="200" height="200" alt="" loading="lazy">';
     var sampleTag = asset.sample ? ' <span class="sample">Sample</span>' : '';

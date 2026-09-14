@@ -3,6 +3,7 @@
 // Each listing includes a "conflicts" array of other approved listings whose time overlaps.
 
 import { getSessionUser } from '../_auth-helper.js';
+import { archivePastListings } from '../_archive.js';
 
 export async function onRequestGet(context) {
   const { env } = context;
@@ -14,6 +15,8 @@ export async function onRequestGet(context) {
   if (user.role !== 'admin') {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
+
+  await archivePastListings(env);
 
   const { results } = await env.DB
     .prepare(`

@@ -5,6 +5,7 @@
 // (LINE, WhatsApp, etc), since email sending isn't wired up yet.
 
 import { getSessionUser } from '../_auth-helper.js';
+import { createResetToken } from '../_reset-token.js';
 
 export async function onRequestPost(context) {
   const { env, request } = context;
@@ -30,16 +31,7 @@ export async function onRequestPost(context) {
     return Response.json({ error: 'User not found' }, { status: 404 });
   }
 
-  const token = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const { reset_url, expires_at } = await createResetToken(env, request, user_id);
 
-  await env.DB
-    .prepare('INSERT INTO password_reset_tokens (token, user_id, expires_at) VALUES (?, ?, ?)')
-    .bind(token, user_id, expiresAt)
-    .run();
-
-  const url = new URL(request.url);
-  const resetUrl = `${url.origin}/reset-password.html?token=${token}`;
-
-  return Response.json({ success: true, reset_url: resetUrl, expires_at: expiresAt });
+  return Response.json({ success: true, reset_url, expires_at });
 }

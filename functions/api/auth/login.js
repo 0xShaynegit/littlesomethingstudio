@@ -17,7 +17,7 @@ export async function onRequestPost(context) {
   }
 
   const user = await env.DB
-    .prepare('SELECT id, name, role, password_hash FROM users WHERE email = ?')
+    .prepare('SELECT id, name, role, status, password_hash FROM users WHERE email = ?')
     .bind(email)
     .first();
 
@@ -28,6 +28,10 @@ export async function onRequestPost(context) {
   const ok = await verifyPassword(password, user.password_hash);
   if (!ok) {
     return Response.json({ error: 'Invalid email or password' }, { status: 401 });
+  }
+
+  if (user.status === 'pending') {
+    return Response.json({ error: 'Your account is awaiting admin approval' }, { status: 403 });
   }
 
   const sessionId = generateSessionId();

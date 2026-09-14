@@ -3,3 +3,4 @@
 originals/
 .env
 .wrangler/
+node_modules/

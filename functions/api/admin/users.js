@@ -15,7 +15,11 @@ export async function onRequestGet(context) {
   }
 
   const { results } = await env.DB
-    .prepare('SELECT id, name, email, role, password_hash IS NOT NULL AS has_password FROM users ORDER BY role, name')
+    .prepare(`
+      SELECT id, name, email, role, status, bio, photo_key,
+        password_hash IS NOT NULL AS has_password
+      FROM users ORDER BY status, role, name
+    `)
     .all();
 
   return Response.json({ users: results });

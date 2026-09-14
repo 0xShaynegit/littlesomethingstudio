@@ -63,6 +63,7 @@
     .actions button { flex: 1; font-size: 0.85rem; padding: 7px; }
     .decline-btn { background: transparent; color: #a13a3a; border: 1px solid #e5c4c4; }
     #empty { color: #9a9384; font-size: 0.9rem; text-align: center; padding: 2rem 0; }
+    .pending-photo, .listing-photo { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; margin-bottom: 8px; display: block; }
     .conflict-warning {
       margin-top: 10px; padding: 8px 10px; background: #fbeecb; border: 1px solid #edd39a;
       border-radius: 8px; font-size: 0.8rem; color: #7a4e0c; line-height: 1.5;
@@ -103,6 +104,9 @@
   <h2>All listings</h2>
   <div id="all"></div>
 
+  <h2>Pending facilitators</h2>
+  <div id="pending-users"></div>
+
   <h2>Facilitators &amp; admin accounts</h2>
   <div class="card" id="users"></div>
 
@@ -132,9 +136,39 @@
     async function loadUsers() {
       const res = await fetch('/api/admin/users', { credentials: 'include' });
       const { users } = await res.json();
+
+      const pending = users.filter(u => u.status === 'pending');
+      const approved = users.filter(u => u.status !== 'pending');
+
+      const pendingContainer = document.getElementById('pending-users');
+      pendingContainer.innerHTML = pending.length === 0
+        ? '<div id="empty">No facilitators awaiting approval.</div>'
+        : pending.map(u => `
+          <div class="card">
+            <div class="card-top">
+              <div>
+                ${u.photo_key ? `<img src="/api/photo/${u.photo_key}" alt="${u.name}" class="pending-photo">` : ''}
+                <div class="title">${u.name}</div>
+                <div class="meta">${u.email}${u.bio ? ` &middot; ${u.bio}` : ''}</div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="decline-btn" data-decline-user="${u.id}">Decline</button>
+              <button data-approve-user="${u.id}">Approve</button>
+            </div>
+          </div>
+        `).join('');
+
+      pendingContainer.querySelectorAll('[data-approve-user]').forEach(btn => {
+        btn.addEventListener('click', () => updateUserApproval(btn.dataset.approveUser, 'approve'));
+      });
+      pendingContainer.querySelectorAll('[data-decline-user]').forEach(btn => {
+        btn.addEventListener('click', () => updateUserApproval(btn.dataset.declineUser, 'decline'));
+      });
+
       const container = document.getElementById('users');
 
-      container.innerHTML = users.map(u => `
+      container.innerHTML = approved.map(u => `
         <div class="user-row">
           <div>
             <span class="user-name">${u.name}</span>
@@ -149,6 +183,17 @@
       container.querySelectorAll('[data-reset-link]').forEach(btn => {
         btn.addEventListener('click', () => generateResetLink(btn.dataset.resetLink));
       });
+    }
+
+    async function updateUserApproval(userId, action) {
+      const res = await fetch(`/api/admin/users/${userId}/${action}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        await loadUsers();
+        await loadStats();
+      }
     }
 
     async function generateResetLink(userId) {
@@ -236,6 +281,7 @@
         <div class="card">
           <div class="card-top">
             <div>
+              ${l.photo_key ? `<img src="/api/photo/${l.photo_key}" alt="${l.title_en}" class="listing-photo">` : ''}
               <div class="title">${l.title_en}</div>
               <div class="meta">${l.facilitator_name} &middot; ${l.start_time} to ${l.end_time}</div>
             </div>

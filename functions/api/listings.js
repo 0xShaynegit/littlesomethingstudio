@@ -1,6 +1,9 @@
+import { archivePastListings } from './_archive.js';
+
 // GET /api/listings?category=yoga
 export async function onRequestGet(context) {
   const { env, request } = context;
+  await archivePastListings(env);
   const url = new URL(request.url);
   const category = url.searchParams.get('category');
 
