@@ -339,6 +339,23 @@ select.control{appearance:none;background-image:url("data:image/svg+xml,%3Csvg x
 .drop .text span{font-size:.8rem;color:var(--ink-faint)}
 .drop .text .accent{color:var(--accent)}
 
+.check-row{display:flex;align-items:flex-start;gap:.7rem;cursor:pointer}
+.check-row input{
+  appearance:none;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line-strong);
+  background:var(--surface);flex-shrink:0;margin-top:.1rem;cursor:pointer;position:relative;
+  transition:background-color var(--fast) var(--ease),border-color var(--fast) var(--ease);
+}
+.check-row input:checked{background:var(--accent);border-color:var(--accent)}
+.check-row input:checked::after{
+  content:"";position:absolute;left:5px;top:1px;width:6px;height:11px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);
+}
+.check-row .text b{display:block;font-size:.9rem;font-weight:600}
+.check-row .text span{font-size:.8rem;color:var(--ink-faint)}
+.repeat-fields{display:flex;align-items:center;gap:.6rem;margin-top:.9rem}
+.repeat-fields .control{width:80px;text-align:center}
+.repeat-fields span{font-size:.85rem;color:var(--ink-soft)}
+
 /* Admin shell: sidebar + content */
 .shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100dvh}
 .side{

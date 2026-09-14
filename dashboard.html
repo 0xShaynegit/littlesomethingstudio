@@ -73,16 +73,27 @@
         </div>
         <div class="form-section">
           <div class="step"><span class="num">2</span><div><h3>When</h3><p>Studio time is Chiang Mai time. The admin checks the room is free.</p></div></div>
-          <div class="form-grid">
-            <div class="field" id="f-start">
-              <label for="start">Starts</label>
-              <input class="control" type="datetime-local" id="start" required>
-              <div class="field-error" aria-live="polite"><span></span></div>
+          <div>
+            <div class="form-grid">
+              <div class="field" id="f-start">
+                <label for="start">Starts</label>
+                <input class="control" type="datetime-local" id="start" required>
+                <div class="field-error" aria-live="polite"><span></span></div>
+              </div>
+              <div class="field" id="f-end">
+                <label for="end">Ends</label>
+                <input class="control" type="datetime-local" id="end" required>
+                <div class="field-error" aria-live="polite"><span></span></div>
+              </div>
             </div>
-            <div class="field" id="f-end">
-              <label for="end">Ends</label>
-              <input class="control" type="datetime-local" id="end" required>
-              <div class="field-error" aria-live="polite"><span></span></div>
+            <label class="check-row" style="margin-top:1.1rem">
+              <input type="checkbox" id="repeat-weekly">
+              <span class="text"><b>Repeat weekly</b><span>Submit the same class on this day and time for several weeks in a row. Each week is approved on its own.</span></span>
+            </label>
+            <div class="repeat-fields" id="repeat-fields" hidden>
+              <span>For</span>
+              <input class="control" type="number" id="repeat-weeks" min="2" max="26" value="6" inputmode="numeric">
+              <span>weeks</span>
             </div>
           </div>
         </div>
@@ -284,6 +295,17 @@
     document.getElementById('drop-hint').textContent = 'JPEG, PNG or WebP. Converted to WebP under 200KB in your browser.';
   }
 
+  var repeatCheck = document.getElementById('repeat-weekly');
+  var repeatFields = document.getElementById('repeat-fields');
+  repeatCheck.addEventListener('change', function () { repeatFields.hidden = !repeatCheck.checked; });
+
+  function addDays(dateTimeLocal, days) {
+    var d = new Date(dateTimeLocal);
+    d.setDate(d.getDate() + days);
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
   var form = document.getElementById('new-listing-form');
   var fTitle = document.getElementById('f-title'), fStart = document.getElementById('f-start'), fEnd = document.getElementById('f-end');
   function validate() {
@@ -310,33 +332,48 @@
     if (!validate()) return;
     var submit = document.getElementById('submit-listing');
     App.busy(submit, true);
-    var body = new FormData();
-    body.set('title_en', document.getElementById('title').value.trim());
-    body.set('category', document.getElementById('category').value);
-    body.set('start_time', document.getElementById('start').value.slice(0, 16).replace('T', ' '));
-    body.set('end_time', document.getElementById('end').value.slice(0, 16).replace('T', ' '));
-    body.set('price', document.getElementById('price').value || '');
-    body.set('capacity', document.getElementById('capacity').value || '');
-    if (pendingPhoto) body.set('photo', pendingPhoto);
-    try {
-      var res = await fetch('/api/my-listings', { method: 'POST', credentials: 'include', body: body });
-      var data = await res.json();
-      if (!res.ok) {
-        formError.querySelector('.notice span').textContent = data.error || 'Something went wrong.';
-        App.reveal(formError, true);
-        return;
+    var title = document.getElementById('title').value.trim();
+    var category = document.getElementById('category').value;
+    var startRaw = document.getElementById('start').value.slice(0, 16).replace('T', ' ');
+    var endRaw = document.getElementById('end').value.slice(0, 16).replace('T', ' ');
+    var price = document.getElementById('price').value || '';
+    var capacity = document.getElementById('capacity').value || '';
+    var weeks = repeatCheck.checked ? Math.max(2, Math.min(26, Number(document.getElementById('repeat-weeks').value) || 6)) : 1;
+
+    var failed = 0;
+    for (var i = 0; i < weeks; i++) {
+      var body = new FormData();
+      body.set('title_en', title);
+      body.set('category', category);
+      body.set('start_time', i === 0 ? startRaw : addDays(document.getElementById('start').value, i * 7));
+      body.set('end_time', i === 0 ? endRaw : addDays(document.getElementById('end').value, i * 7));
+      body.set('price', price);
+      body.set('capacity', capacity);
+      if (pendingPhoto) body.set('photo', pendingPhoto);
+      if (weeks > 1) submit.querySelector('.label').textContent = 'Submitting week ' + (i + 1) + ' of ' + weeks;
+      try {
+        var res = await fetch('/api/my-listings', { method: 'POST', credentials: 'include', body: body });
+        if (!res.ok) failed++;
+      } catch (err) {
+        failed++;
       }
-      form.reset();
-      resetPhoto();
-      App.toast('Submitted. The studio will review it shortly.');
-      await loadListings();
-      document.getElementById('attention-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } catch (err) {
+    }
+    submit.querySelector('.label').textContent = 'Submit for approval';
+    App.busy(submit, false);
+
+    if (failed === weeks) {
       formError.querySelector('.notice span').textContent = 'Could not reach the studio. Check your connection and try again.';
       App.reveal(formError, true);
-    } finally {
-      App.busy(submit, false);
+      return;
     }
+    form.reset();
+    resetPhoto();
+    repeatFields.hidden = true;
+    App.toast(weeks > 1
+      ? 'Submitted ' + (weeks - failed) + ' of ' + weeks + ' weeks for approval.'
+      : 'Submitted. The studio will review it shortly.');
+    await loadListings();
+    document.getElementById('attention-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   document.getElementById('logout').addEventListener('click', App.logout);
