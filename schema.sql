@@ -95,6 +95,9 @@ CREATE TABLE IF NOT EXISTS bookings_archive (
   archived_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed the one physical space
+-- Seed the one physical space (guarded: schema.sql is re-run against
+-- existing databases when new IF NOT EXISTS tables are added, and this
+-- insert has no such guard of its own)
 INSERT INTO spaces (name, hourly_rate, capacity, amenities)
-VALUES ('The Little Something Studio - 3rd Floor', NULL, 20, 'Air-conditioned, wooden floor, mountain views, drinking water, toilets, parking');
+SELECT 'The Little Something Studio - 3rd Floor', NULL, 20, 'Air-conditioned, wooden floor, mountain views, drinking water, toilets, parking'
+WHERE NOT EXISTS (SELECT 1 FROM spaces);
