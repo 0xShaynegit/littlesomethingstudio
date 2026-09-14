@@ -69,20 +69,6 @@
     apply(params.get('cat') || 'all');
   }
 
-  var form = document.querySelector('[data-booking]');
-  if (form) {
-    var select = form.querySelector('select[name="session"]');
-    var wanted = params.get('session');
-    if (wanted) {
-      var match = Array.prototype.find.call(select.options, function (o) { return o.value === wanted; });
-      if (!match) {
-        match = new Option(wanted, wanted);
-        select.add(match, 1);
-      }
-      select.value = wanted;
-    }
-  }
-
   document.querySelectorAll('form[data-ajax]').forEach(function (f) {
     f.addEventListener('submit', function (e) {
       e.preventDefault();

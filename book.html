@@ -11,6 +11,7 @@
 <link rel="preload" href="fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('tlss-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="css/site.css">
+<style>#booking-error{border-left-color:#a13a3a;margin-bottom:1rem}</style>
 </head>
 <body>
 
@@ -54,27 +55,25 @@
   <section>
     <div class="wrap two-col">
       <div>
-        <form class="form" data-booking data-ajax data-done="booking-done" action="https://formsubmit.co/ajax/shayneinthailan@gmail.com" method="post">
-          <input type="hidden" name="_subject" value="New class booking">
-          <input type="hidden" name="_template" value="table">
+        <form class="form" id="booking-form" data-done="booking-done">
           <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
           <div class="field">
             <label for="session">Session</label>
-            <select id="session" name="session" required>
-              <option value="">Choose a session</option>
-            <option value="Contact Improvisation: Essential Principles, Wed 16 Sep 11:00">Contact Improvisation: Essential Principles with Sandra, Wed 16 Sep, 11:00 to 13:00 (฿350)</option>
-            <option value="Contact Improvisation: Essential Principles, Wed 23 Sep 11:00">Contact Improvisation: Essential Principles with Sandra, Wed 23 Sep, 11:00 to 13:00 (฿350)</option>
-            <option value="Slow Morning Hatha, Sat 19 Sep 08:00">Slow Morning Hatha with Nok, Sat 19 Sep, 08:00 to 09:15 (฿300)</option>
-            <option value="Yin and Breath, Tue 22 Sep 18:00">Yin and Breath with Nok, Tue 22 Sep, 18:00 to 19:15 (฿300)</option>
-            <option value="Capoeira for Beginners, Thu 17 Sep 18:30">Capoeira for Beginners with Mateus, Thu 17 Sep, 18:30 to 20:00 (฿350)</option>
-            <option value="Watercolour Sunday: Mountain Light, Sun 20 Sep 14:00">Watercolour Sunday: Mountain Light with Pim, Sun 20 Sep, 14:00 to 16:30 (฿450)</option>
-            <option value="Urban Sketching Morning, Sat 26 Sep 09:30">Urban Sketching Morning with Pim, Sat 26 Sep, 09:30 to 12:00 (฿400)</option>
-            <option value="Flow and Groove Dance, Fri 18 Sep 19:00">Flow and Groove Dance with Lena, Fri 18 Sep, 19:00 to 20:15 (฿320)</option>
+            <select id="session" name="listing_id" required>
+              <option value="">Loading sessions&hellip;</option>
             </select>
           </div>
           <div class="field"><label for="name">Name</label><input id="name" name="name" autocomplete="name" required></div>
           <div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required></div>
           <div class="field"><label for="line">LINE handle</label><input id="line" name="line" autocomplete="off"><small>So we can confirm with you on LINE.</small></div>
+          <div class="field">
+            <label for="payment">Payment method</label>
+            <select id="payment" name="payment_method" required>
+              <option value="cash">Cash on arrival</option>
+              <option value="promptpay">PromptPay QR</option>
+            </select>
+          </div>
+          <div class="notice" id="booking-error" hidden role="alert"></div>
           <button class="btn btn-fill" type="submit">Request my spot</button>
         </form>
         <div class="notice" id="booking-done" hidden role="status">
@@ -179,5 +178,82 @@
 </footer>
 
 <script src="js/site.js" defer></script>
+<script defer>
+(function () {
+  function fmtDate(d) {
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function fmtTime(d) {
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  function parseLocal(s) {
+    var parts = s.split(/[- :]/);
+    return new Date(+parts[0], +parts[1] - 1, +parts[2], +parts[3], +parts[4]);
+  }
+
+  var select = document.getElementById('session');
+  if (!select) return;
+
+  var wanted = new URLSearchParams(location.search).get('listing');
+
+  fetch('/api/listings')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var listings = data.listings || [];
+      select.innerHTML = '<option value="">Choose a session</option>';
+      listings.forEach(function (l) {
+        var start = parseLocal(l.start_time);
+        var end = parseLocal(l.end_time);
+        var label = l.title_en + ' with ' + l.facilitator_name + ', ' + fmtDate(start) + ', '
+          + fmtTime(start) + ' to ' + fmtTime(end) + ' (฿' + l.price + ')';
+        var opt = new Option(label, l.id);
+        select.add(opt);
+      });
+      if (wanted) select.value = wanted;
+    })
+    .catch(function () {
+      select.innerHTML = '<option value="">Could not load sessions, please refresh</option>';
+    });
+
+  var form = document.getElementById('booking-form');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var errorEl = document.getElementById('booking-error');
+    errorEl.hidden = true;
+    var submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
+    fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        listing_id: Number(document.getElementById('session').value),
+        attendee_name: document.getElementById('name').value,
+        attendee_phone: document.getElementById('phone').value,
+        attendee_line: document.getElementById('line').value || null,
+        payment_method: document.getElementById('payment').value
+      })
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) {
+          errorEl.textContent = result.data.error || 'Something went wrong. Please try again.';
+          errorEl.hidden = false;
+          submitBtn.disabled = false;
+          return;
+        }
+        form.hidden = true;
+        var done = document.getElementById('booking-done');
+        done.hidden = false;
+        done.scrollIntoView({ block: 'center' });
+      })
+      .catch(function () {
+        errorEl.textContent = 'Something went wrong. Please try again, or message us on LINE.';
+        errorEl.hidden = false;
+        submitBtn.disabled = false;
+      });
+  });
+})();
+</script>
 </body>
 </html>

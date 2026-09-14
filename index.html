@@ -229,7 +229,6 @@
     var asset = ASSETS[listing.facilitator_name] || {};
     var start = parseLocal(listing.start_time);
     var end = parseLocal(listing.end_time);
-    var sessionLabel = listing.title_en + ', ' + fmtDate(start) + ' ' + fmtTime(start);
     var media = listing.photo_key
       ? '<img src="/api/photo/' + listing.photo_key + '" width="400" height="400" alt="" loading="lazy">'
       : asset.photo
@@ -248,7 +247,7 @@
       + '</div>'
       + '<div class="foot">'
       + '<span class="price">฿' + listing.price + '</span>'
-      + '<a class="btn btn-fill" href="book.html?session=' + encodeURIComponent(sessionLabel) + '">Book</a>'
+      + '<a class="btn btn-fill" href="book.html?listing=' + listing.id + '">Book</a>'
       + '</div>'
       + '</article>';
   }
