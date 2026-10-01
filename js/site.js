@@ -69,6 +69,49 @@
     apply(params.get('cat') || 'all');
   }
 
+  var galleryImgs = Array.prototype.slice.call(document.querySelectorAll('.gallery img'));
+  if (galleryImgs.length) {
+    var lb = document.createElement('div');
+    lb.className = 'lightbox';
+    lb.innerHTML = '<button class="lb-close" type="button" aria-label="Close">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>'
+      + '<button class="lb-prev" type="button" aria-label="Previous">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>'
+      + '<img alt="">'
+      + '<button class="lb-next" type="button" aria-label="Next">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>';
+    document.body.appendChild(lb);
+    var lbImg = lb.querySelector('img');
+    var idx = 0;
+    var show = function (i) {
+      idx = (i + galleryImgs.length) % galleryImgs.length;
+      lbImg.src = galleryImgs[idx].src;
+      lbImg.alt = galleryImgs[idx].alt || '';
+    };
+    var open = function (i) {
+      show(i);
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+    var close = function () {
+      lb.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+    galleryImgs.forEach(function (img, i) {
+      img.addEventListener('click', function () { open(i); });
+    });
+    lb.querySelector('.lb-close').addEventListener('click', close);
+    lb.querySelector('.lb-prev').addEventListener('click', function () { show(idx - 1); });
+    lb.querySelector('.lb-next').addEventListener('click', function () { show(idx + 1); });
+    lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+    addEventListener('keydown', function (e) {
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') show(idx - 1);
+      if (e.key === 'ArrowRight') show(idx + 1);
+    });
+  }
+
   document.querySelectorAll('form[data-ajax]').forEach(function (f) {
     f.addEventListener('submit', function (e) {
       e.preventDefault();

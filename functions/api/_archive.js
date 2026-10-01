@@ -25,6 +25,8 @@ export async function archivePastListings(env) {
       FROM listings WHERE id IN (${placeholders})
     `).bind(...ids),
     env.DB.prepare(`DELETE FROM bookings WHERE listing_id IN (${placeholders})`).bind(...ids),
+    env.DB.prepare(`DELETE FROM session_instructors WHERE listing_id IN (${placeholders})`).bind(...ids),
+    env.DB.prepare(`UPDATE studio_updates SET listing_id = NULL WHERE listing_id IN (${placeholders})`).bind(...ids),
     env.DB.prepare(`DELETE FROM listings WHERE id IN (${placeholders})`).bind(...ids),
   ]);
 }

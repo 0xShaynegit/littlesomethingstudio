@@ -195,9 +195,20 @@ section{padding-block:var(--section)}
 .gallery{display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem}
 .gallery figure{position:relative;overflow:hidden;grid-column:span 2}
 .gallery figure.big{grid-column:span 4;grid-row:span 2}
-.gallery img{width:100%;height:100%;object-fit:cover;aspect-ratio:4/3}
+.gallery img{width:100%;height:100%;object-fit:cover;aspect-ratio:4/3;cursor:zoom-in}
 .gallery figure.big img{aspect-ratio:auto}
 @media (max-width:760px){.gallery{grid-template-columns:1fr 1fr}.gallery figure,.gallery figure.big{grid-column:span 1;grid-row:auto}.gallery figure.big{grid-column:1/-1}.gallery figure.big img{aspect-ratio:4/3}}
+
+/* lightbox */
+.lightbox{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(10,10,10,.92);padding:2rem}
+.lightbox.open{display:flex}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+.lightbox .lb-close,.lightbox .lb-prev,.lightbox .lb-next{position:absolute;background:rgba(255,255,255,.12);border:none;color:#fff;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.lightbox .lb-close{top:1.2rem;right:1.2rem}
+.lightbox .lb-prev{left:1.2rem;top:50%;transform:translateY(-50%)}
+.lightbox .lb-next{right:1.2rem;top:50%;transform:translateY(-50%)}
+.lightbox .lb-close svg,.lightbox .lb-prev svg,.lightbox .lb-next svg{width:22px;height:22px}
+@media (max-width:600px){.lightbox{padding:.5rem}.lightbox .lb-prev,.lightbox .lb-next{width:36px;height:36px}}
 
 /* directory + profiles */
 .dir-filters{margin-bottom:2.5rem}

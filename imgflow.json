@@ -1,0 +1,7 @@
+{
+  "SITE_PREFIX": "thelittlesomethingstudio-the-little-something-studio-",
+  "SOURCE_DIRS": ["originals/first-aid"],
+  "OUTPUT_DIR": "images/updates",
+  "URL_PREFIX": "images/updates/",
+  "FORMATS": ["webp"]
+}

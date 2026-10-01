@@ -26,6 +26,7 @@
       <ul>
         <li><a href="index.html" aria-current="page">Home</a></li>
         <li><a href="facilitators.html">Classes</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
         <li><a href="rent.html">Rent the space</a></li>
         <li><a href="about.html">About &amp; contact</a></li>
       </ul>
@@ -99,6 +100,35 @@
       </div>
       <div class="cards" data-upcoming-cards>
         <p class="lede">Loading upcoming classes&hellip;</p>
+      </div>
+      <p class="lede" style="margin-top:2rem">We have new classes coming up, and still have a lot of open slots available. Contact us to pop down for a tour and a chat.</p>
+    </div>
+  </section>
+
+  <section class="reviews">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <div>
+          <span class="eyebrow">Reviews</span>
+          <h2>What people are saying</h2>
+        </div>
+      </div>
+      <div class="cards" data-reviews-list>
+        <p class="lede">Loading reviews&hellip;</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="studio-updates">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <div>
+          <span class="eyebrow">Studio Updates</span>
+          <h2>What's changing on the floor</h2>
+        </div>
+      </div>
+      <div data-updates-list>
+        <p class="lede">Loading updates&hellip;</p>
       </div>
     </div>
   </section>
@@ -202,15 +232,15 @@
       webp: 'images/thelittlesomethingstudio-the-little-something-studio-facilitator-sandra-portrait-400w.webp',
       alt: 'Sandra, contact improvisation facilitator',
       sample: false
-    },
-    Nok: { avatar: 'images/avatars/avatar-nok.svg', sample: true },
-    Mateus: { avatar: 'images/avatars/avatar-mateus.svg', sample: true },
-    Pim: { avatar: 'images/avatars/avatar-pim.svg', sample: true },
-    Lena: { avatar: 'images/avatars/avatar-lena.svg', sample: true }
+    }
   };
   var CAT_LABELS = {
     yoga: 'Yoga', dance: 'Dance', capoeira: 'Capoeira', watercolour: 'Watercolour',
     'movement-lab': 'Movement Lab', 'sound-healing': 'Sound Healing'
+  };
+  var STATUS_LABELS = {
+    event: 'Event', class_walkin: 'Walk-ins welcome', class_coming_soon: 'Coming Soon',
+    private_booking: 'Private Booking', community_event: 'Community Event', open_slot: 'Open Slot'
   };
   var WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   var MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -236,20 +266,91 @@
       : '<img src="' + (asset.avatar || '') + '" width="200" height="200" alt="" loading="lazy">';
     var sampleTag = asset.sample ? ' <span class="sample">Sample</span>' : '';
     var delay = i === 0 ? '' : ' d' + Math.min(i, 3);
+    var instructorNames = listing.facilitator_name + (listing.extra_instructor_names ? ', ' + listing.extra_instructor_names : '');
+    var statusTag = listing.session_status && STATUS_LABELS[listing.session_status]
+      ? '<span class="tag">' + escapeHtml(STATUS_LABELS[listing.session_status]) + '</span>' : '';
+    var priceTag = listing.price ? '<span class="price">฿' + listing.price + '</span>' : '';
     return '<article class="card rv' + delay + '">'
       + '<div class="who">' + media
-      + '<div><b>' + escapeHtml(listing.facilitator_name) + sampleTag + '</b><small>' + escapeHtml(CAT_LABELS[listing.category] || listing.category || '') + '</small></div>'
+      + '<div><b>' + escapeHtml(instructorNames) + sampleTag + '</b><small>' + escapeHtml(CAT_LABELS[listing.category] || listing.category || '') + '</small></div>'
       + '</div>'
       + '<h3>' + escapeHtml(listing.title_en) + '</h3>'
       + '<div class="meta">'
       + '<span><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>' + fmtDate(start) + '</span>'
       + '<span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' + fmtTime(start) + ' to ' + fmtTime(end) + '</span>'
+      + statusTag
       + '</div>'
       + '<div class="foot">'
-      + '<span class="price">฿' + listing.price + '</span>'
+      + priceTag
+      + (listing.update_id ? '<a href="index.html#update-' + listing.update_id + '">Photos and details</a> ' : '')
       + '<a class="btn btn-fill" href="book.html?listing=' + listing.id + '">Book</a>'
       + '</div>'
       + '</article>';
+  }
+
+  var reviewsList = document.querySelector('[data-reviews-list]');
+  if (reviewsList) {
+    fetch('/api/reviews')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var reviews = data.reviews || [];
+        if (!reviews.length) {
+          reviewsList.innerHTML = '<p class="lede">No reviews yet.</p>';
+          return;
+        }
+        reviewsList.innerHTML = reviews.map(function (r) {
+          return '<article class="card rv in">'
+            + '<p>' + escapeHtml(r.body) + '</p>'
+            + '<p class="sub">' + (r.author_name ? escapeHtml(r.author_name) : 'Studio guest') + '</p>'
+            + '</article>';
+        }).join('');
+      })
+      .catch(function () {
+        reviewsList.innerHTML = '<p class="lede">Couldn\'t load reviews right now.</p>';
+      });
+  }
+
+  var updatesList = document.querySelector('[data-updates-list]');
+  if (updatesList) {
+    fetch('/api/updates')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var updates = data.updates || [];
+        if (!updates.length) {
+          updatesList.innerHTML = '<p class="lede">Nothing posted yet.</p>';
+          return;
+        }
+        updatesList.innerHTML = updates.map(function (u) {
+          var d = parseLocal(u.published_at + ' 00:00:00');
+          var photo = u.photo_path
+            ? '<img src="' + escapeHtml(u.photo_path) + '" alt="" loading="lazy" style="width:100%;max-width:480px;margin-bottom:1rem">'
+            : '';
+          var extras = '';
+          try {
+            var list = u.extra_photos ? JSON.parse(u.extra_photos) : [];
+            extras = list.length ? '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.5rem;margin-bottom:1rem">'
+              + list.map(function (x) {
+                return '<img src="' + escapeHtml(x.src) + '" width="' + x.w + '" height="' + x.h + '" alt="' + escapeHtml(x.alt) + '" loading="lazy" style="width:100%;height:auto">';
+              }).join('') + '</div>' : '';
+          } catch (e) { extras = ''; }
+          var eventLink = u.listing_id
+            ? '<p><a class="btn btn-fill" href="book.html?listing=' + u.listing_id + '">Book this event</a></p>' : '';
+          return '<article class="card rv in" id="update-' + u.id + '" style="margin-bottom:2rem">'
+            + photo
+            + extras
+            + '<h3>' + escapeHtml(u.title_en) + (u.title_th ? ' <span lang="th">/ ' + escapeHtml(u.title_th) + '</span>' : '') + '</h3>'
+            + '<p class="sub">' + fmtDate(d) + '</p>'
+            + '<div style="display:grid;gap:1.5rem" class="update-langs">'
+            + '<div lang="en">' + escapeHtml(u.body_en).split('\n').join('<br>') + '</div>'
+            + '<div lang="th">' + escapeHtml(u.body_th).split('\n').join('<br>') + '</div>'
+            + '</div>'
+            + eventLink
+            + '</article>';
+        }).join('');
+      })
+      .catch(function () {
+        updatesList.innerHTML = '<p class="lede">Couldn\'t load updates right now.</p>';
+      });
   }
 
   var grid = document.querySelector('[data-upcoming-cards]');
