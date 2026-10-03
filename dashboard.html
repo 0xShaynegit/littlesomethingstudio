@@ -325,6 +325,11 @@
     });
   });
 
+  document.getElementById('start').addEventListener('change', function () {
+    var endEl = document.getElementById('end');
+    if (this.value && (!endEl.value || endEl.value <= this.value)) endEl.value = this.value;
+  });
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     var formError = document.getElementById('form-error');
